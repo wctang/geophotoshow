@@ -1,0 +1,694 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
+<title>GeoPhotoShow - geotagging photos</title>
+<style type="text/css">
+
+body { margin:0; overflow:hidden; color:black; font-family:Arial,sans-serif; }
+img { border:0; }
+*:focus { outline:none } 
+
+img.f_icon        { width:75px; height:75px; margin:2px; }
+img.f_icon:hover  { margin:0; border:2px solid yellow; }
+img.f_thumb       { margin:2px; }
+img.f_thumb:hover { margin:0; border:2px solid yellow; }
+img.exp           { width:23px; height:27px; background:transparent url(/images/icons.png) no-repeat scroll 0px 0px; }
+img.col           { width:23px; height:27px; background:transparent url(/images/icons.png) no-repeat scroll 0px -27px; }
+img.close         { width:15px; height:15px; background:transparent url(/images/icons.png) no-repeat scroll 0px -54px; cursor:pointer; }
+img.close:hover   {                          background:transparent url(/images/icons.png) no-repeat scroll -15px -54px; cursor:pointer; }
+img.pos           { width:15px; height:15px; background:transparent url(/images/icons.png) no-repeat scroll -23px 0px; }
+img.refresh       { width:62px; height:62px; background:transparent url(/images/icons.png) no-repeat scroll -38px -0px; cursor:pointer; }
+img.refresh:hover {                          background:transparent url(/images/icons.png) no-repeat scroll -38px -62px; cursor:pointer; }
+img.link          { width:15px; height:15px; background:transparent url(/images/icons.png) no-repeat scroll -15px -114px; cursor:pointer; }
+
+div.selable       { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; cursor:pointer; line-height:20px; color:lightblue; }
+div.selable:hover {                          background:transparent url(/images/icons.png) no-repeat scroll -38px -207px; color:white; }
+div.selected      { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; line-height:20px; font-weight:bold; }
+
+.sdh   { position:absolute; left:0px; top:1.7em; height:5px; }
+.sdv   { position:absolute; left:0px; top:1.7em; width:5px; }
+.sdvr  { position:absolute; left:-6px; top:1.7em; width:5px; }
+.sdh  div { width:100%; }
+.sdv  div { height:100%; }
+.sdvr div { height:100%; right:-1px; }
+.sd div { background-color:black; overflow:hidden; position:absolute; z-index:2; }
+.sd .o1 { opacity:0.1; filter:alpha(opacity=10); } .sd .o2 { opacity:0.08; filter:alpha(opacity=8); } .sd .o3 { opacity:0.06; filter:alpha(opacity=6); } .sd .o4 { opacity:0.04; filter:alpha(opacity=4); } .sd .o5 { opacity:0.02; filter:alpha(opacity=2); }
+.sd .h1 { height:1px; } .sd .h2 { height:2px; }  .sd .h3 { height:3px; }  .sd .h4 { height:4px; }  .sd .h5 { height:5px; }
+.sd .v1 { width:1px; }  .sd .v2 { width:2px; }   .sd .v3 { width:3px; }   .sd .v4 { width:4px; }   .sd .v5 { width:5px; }
+
+.range { position:absolute; }
+.vline { position:absolute; width:1px; background-color:red; }
+.hline { position:absolute; height:1px; background-color:red; }
+
+#loading { position:absolute; left:47%; top:0px; padding:3px 10px; background-color:#FFF1A8; font-size:84%; font-weight:bold; display:none; }
+#saving  { position:absolute; left:47%; top:0px; padding:3px 10px; background-color:#FFF1A8; font-size:84%; font-weight:bold; display:none; }
+#error  { position:absolute; left:47%; top:0px; padding:3px 10px; background-color:red; font-size:84%; font-weight:bold; display:none; }
+
+#userbar { text-align:right; margin-right:10px; font-size:84%; }
+
+#header { position:relative; width:100%; height:50px; }
+ #logo { float:left; padding:6px 10px; }
+ #logo a { text-decoration:none; }
+ #title { font-size:28px; font-weight:bold; padding-left:10px; }
+
+#content { position:relative; width:100%; overflow:hidden; }
+#panel { position:absolute; width:450px; top:0; z-index:10; background-color:white; }
+
+.bar { position:relative; height:1.7em; line-height:1.7em; }
+.bar span { font-size:80%; margin-left:10px; }
+.switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:auto; }
+#mainbar span { float:right; padding-right:2em; }
+
+#tabs { position:relative; font-size:80%; background-color:white; }
+.tab { position:absolute; top:6px; left:6px; bottom:6px; right:6px; overflow:hidden; display:none; }
+.tab .tabrow { height: 2em; line-height: 2em; }
+
+.pager_prev, 
+.pager_next { margin-right:3px; padding:3px 3px; color:#808185; cursor:pointer; }
+.pager_dots { margin-right:3px;                  color:#808185; }
+.pager_num,
+.perpage_num,
+.viewas_type,
+.sortby_type { margin-right:3px; padding:2px 4px; color:#808185; border:1px solid #CCCCCC; cursor:pointer; }
+.pager_num:hover,
+.perpage_num:hover,
+.viewas_type:hover,
+.sortby_type:hover { background-color:lightblue; }
+.pager_curr,
+.perpage_curr,
+.viewas_curr,
+.sortby_curr { margin-right:3px; padding:2px 4px; color:white;   border:1px solid #808185; background-color:#808185; font-weight:bold; }
+
+
+.photolist { position:absolute; left:0; right:0; bottom:0; overflow-x:hidden; overflow-y:auto; }
+.photolist div.panel { width:420px; }
+
+.photolist div.item_icon { position:relative; width:79px; height:79px; float:left; }
+.photolist div.item_icon input { position:absolute; left:0px; top:57px; z-index:1; }
+.photolist div.item_icon div.havpos { position:absolute; left:59px; top:59px; z-index:1; }
+
+.photolist div.item_thumb { position:relative; width:104px; height:104px; float:left; }
+.photolist div.item_thumb:hover { background-color:lightyellow; }
+.photolist div.item_thumb input { position:absolute; left:0px; top:0px; z-index:1; }
+.photolist div.item_thumb div.havpos { position:absolute; left:3px; top:1.5em; z-index:1; }
+
+.photolist div.item_detail { position:relative; }
+.photolist div.item_detail:hover { background-color:lightyellow; }
+.photolist div.item_detail input { float:left; }
+.photolist div.item_detail div.havpos { position:absolute; top:2em; left:3px; }
+
+.photolist div.item_detail a { text-decoration:none; }
+.photolist div.item_detail a:hover { text-decoration:underline; }
+.photolist div.item_detail div.thumb { position:relative; width:104px; float:left; text-align:center; }
+.photolist div.item_detail div.desc { position:relative; width:280px; font-size:11px; float:left; padding:5px; }
+.photolist div.item_detail div.desc span.title { font-size:14pt; font-weight:bold; }
+.photolist div.item_detail div.desc img.buddy { float:left; width:25px; height:25px; margin:3px 8px; }
+
+#showpanel h1 { margin:0; }
+#showpanel a.title { color:#1057AE; }
+#showpanel a.title:hover { color:white; text-decoration:none; background-color:#0063DC; }
+#showpanel #showpanel_switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:auto; }
+#showpanel img.buddy { float:left; margin:3px 8px; }
+
+#place_link a { display:block; color:#1057AE; }
+#place_link a:hover { color:white; text-decoration:none; background-color:#0063DC; }
+</style>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+</head>
+
+<body onunload="GUnload()">
+
+<div id="loading"> Loading... </div>
+<div id="saving"></div>
+<div id="error"></div>
+
+<div id="userbar">
+{% if user %}
+<b>{{ user.username }}@<a href="http://www.flickr.com/"><img src="/images/icon_flickr.gif"/></a> </b>
+{% else %}
+  <a href="/flickr/login">Sign in <img src="/images/icon_flickr.gif"/></a>
+{% endif %}
+ | <a target="_blank" href="http://docs.google.com/View?docID=dxtw5pn_11328mg6dg9">Help</a> | <a href="http://groups.google.com/group/geophotoshow"><span style="color:red;">Bug report</span></a>
+{% if user %}
+ | <a href="/flickr/logout">Sign out</a>
+{% endif %}
+
+</div>
+
+<div id="header">
+  <div id="logo"><a href="//www.geophotoshow.com/"><span id="title"><span style="color:#0161dc;">GeoPhoto</span><span style="color:#ff007c;">Show</span></span></a> <span style="font-size:10pt; color:gray;">beta!</span></span></div>
+  <div style="float:right; margin:10px 10px 0 0;">
+    <a target="_blank" href="https://www.paypal.com/xclick/business=wctang@gmail.com&item_name=geophotoshow&no_note=1&currency_code=USD"><img class="notsowide" src="/images/paypal_en.gif"/></a>
+  </div>
+</a>
+</div>
+
+<div id="content">
+  <div id="mainbar" class="bar" style="background-color:#D5DDF3;">
+    <span class="links">
+      <a id="links_currentmap" target="_blank" style="display:none;"><img class="link" src="/images/transparent.png"/>Link to this map</a>
+      <a id="links_photoset" style="display:none;"><img class="link" src="/images/transparent.png"/>Link</a>
+    </span>
+    <div id="links_currentmap_panel" class="popup_panel" style="position:absolute; float:right; top:-1.7em; right:10px; z-index:7; width:100px; height:100px; padding:5px 5px 10px 10px; font-size:small; background-color:#E8ECF9; border:1px solid #AABEF3; display:none;">
+      <img class="close" src="/images/transparent.png" style="float:right;" onclick="$(this.parentNode).hide();"/>
+      <div>Copy and paste the URL below:<br/>
+      <input id="links_currentmap_url" type="text" tabindex="400" style="width:29em;" onclick="this.select();"/></div>
+    </div>
+    <div id="links_photoset_panel" class="popup_panel" style="position:absolute; top:1.7em; right:10px; z-index:7; padding:5px 5px 10px 10px; font-size:small; background-color:#E8ECF9; border:1px solid #AABEF3; display:none;">
+      <img class="close" src="/images/transparent.png" style="float:right;" onclick="$(this.parentNode).hide();"/>
+      <div>Paste link in <b>email</b> or <b>IM</b><br/>
+      <input id="links_photoset_url" type="text" tabindex="400" style="width:29em;" onclick="this.select();"/></div>
+      <div>Paste HTML to embed in website<br/>
+      <input id="links_photoset_html" type="text" tabindex="401" style="width:29em;" onclick="this.select();"/></div>
+    </div>
+  </div>
+  <div id="screenrange" style="display:none;">
+    <div id="focus" class="range"><div class="vline" style="top:0px; left:20px; height:41px;"></div><div class="hline" style="top:20px; left:0px; width:41px;"></div></div>
+    <div id="range_lt" class="range"><div id="place_link" style="position:absolute; bottom:0;"></div><div class="vline" style="top:0px; left:0px; height:100px;"></div><div class="hline" style="top:0px; left:0px; width:100px;"></div></div>
+    <div id="range_rb" class="range"><div class="vline" style="bottom:0px; right:0px; height:100px;"></div><div class="hline" style="bottom:0px; right:0px; width:100px;"></div></div>
+  </div>
+  <div id="refresh_control" style="text-align:center; font-size:11pt; display:none;">
+    <img class="refresh" src="/images/transparent.png"/>
+    <div id="sel_auto" class="selected">Auto</div>
+    <div id="sel_manual" class="selable">Manual</div>
+  </div>
+  <div id="map"></div>
+  <div class="sd sdh"><div class="h1 o1"></div><div class="h2 o2"></div><div class="h3 o3"></div><div class="h4 o4"></div><div class="h5 o5"></div></div>
+  <div class="sd sdv"><div class="v1 o1"></div><div class="v2 o2"></div><div class="v3 o3"></div><div class="v4 o4"></div><div class="v5 o5"></div></div>
+  <div id="showpanel" style="position:absolute; top:0px; background-color:white; z-index:3; display:none;">
+    <div class="bar" style="background-color:#D5DDF3;">
+      <img class="close" src="/images/transparent.png" style="float:right; margin:5px 20px;"/>
+    </div>
+    <div id="showpanel_content" style="position:absolute; top:1.7em; bottom:0; right:0; left:0; overflow:auto;">
+      <div style="margin:auto; width:500px; padding:3px 0 10px 0;">
+        <h1><a class="title" target="_blank"></a></h1>
+        <div style="margin-top:1em;">
+          <a class="buddyurl" target="_blank"><img class="buddy"></img></a>
+          <span>From <a class="owner" target="_blank"></a></span><br/>
+          <span>Posted on <a class="uploaddate" target="_blank"></a>, Taken on <a class="takendate" target="_blank"></a></span>
+        </div>
+        <div style="margin-top:1em; position:absolute;">
+          <div class="bar">
+            <span id="showpanel_switch">
+                <a id="showpanel_switch_photo" href="javascript:void(0)">Photo</a>
+              | <a id="showpanel_switch_map" href="javascript:void(0)">Map</a>
+              | <a id="showpanel_switch_streetview" href="javascript:void(0)">Street View</a>
+            </span>
+          </div>
+          <div id="showpanel_tab_photo" class="showpanel_tab" style="position:absolute;">
+            <img class="photo"/>
+          </div>
+          <div id="showpanel_tab_map" class="showpanel_tab" style="position:absolute;">
+            <div id="photomap" style="width:500px; height:350px;"></div>
+          </div>
+          <div id="showpanel_tab_streetview" class="showpanel_tab" style="position:absolute;">
+            <div id="panorama_ctnr" style="width:500px; height:350px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="panel">
+    <a id="panel_toggle" href="javascript:void(0)" style="position:absolute;"><img class="col" style="position:absolute; right:-1px;" src="/images/transparent.png"/></a>
+    <div class="sd sdvr"><div class="v1 o1"></div><div class="v2 o2"></div><div class="v3 o3"></div><div class="v4 o4"></div><div class="v5 o5"></div></div>
+    <div class="bar" style="background-color:#E8ECF9;">
+      <span class="switch">
+        <a id="browse_switch" href="javascript:void(0)">Browse</a>
+{% if user %}
+      | <a id="geotag_switch" href="javascript:void(0)">GeoTagging</a>
+      | <a id="phoset_switch" href="javascript:void(0)">Photoset</a>
+{% endif %}
+      </span>
+    </div>
+    <div id="tabs">
+      <div id="browse_tab" class="tab">
+        <div class="tabrow">
+          <select id="browse_type">
+            <option value="all" title="Search all photos.">All Photos</option>
+{% if user %}
+            <option value="user" title="Only Search your photos.">Your Photos</option>
+            <optgroup label="Your contacts" id="contact_optgroup"></optgroup>
+{% endif %}
+          </select>
+        </div>
+        <div class="tabrow">
+          <form id="browse_query" style="margin:0; padding:0;"><input type="text" style="width:350px;"/> <input type="submit" value="Search"/></form>
+        </div>
+        <div class="tabrow">
+          <span id="browse_perpage" style="float:right;">
+            <span id="browse_perpage_25" class="perpage_num">25</span><span id="browse_perpage_50" class="perpage_num">50</span><span id="browse_perpage_100" class="perpage_num">100</span><span id="browse_perpage_200" class="perpage_num">200</span>
+          </span>
+          <span id="browse_pager"></span>
+        </div>
+        <div class="tabrow">
+          <span id="browse_viewas" style="float:right;">
+            <span id="browse_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="browse_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="browse_viewas_detail" class="viewas_type" type="detail">Detail</span>
+          </span>
+          <span id="browse_sortby">
+            <span id="browse_sortby_posted" class="sortby_type" type="posted">Date</span><span id="browse_sortby_interestingness" class="sortby_type" type="interestingness">Rank</span>
+          </span>
+        </div>
+        <div id="browse_photolist" class="photolist" style="top:8em;"></div>
+      </div>
+{% if user %}
+      <div id="geotag_tab" class="tab">
+        <div class="tabrow">
+          <select id="geotag_filter">
+            <option value="0" title="Select">Select filter...</option>
+            <option value="all" title="All your content">All your content</option>
+            <option value="uploaded">Your recent uploaded content</option>
+            <option value="updated">Your recent updated content</option>
+            <option value="notag">Your non-tagged content</option>
+            <option value="noset">Your content not in a set</option>
+            <option value="geotag">Your geotagged content</option>
+            <option value="nogeotag">Your non-geotagged content</option>
+            <option value="inrange">Your content in this range</option>
+            <optgroup label="Your sets" id="photoset_optgroup"></optgroup>
+            <optgroup label="Popular Tags" id="populartags_optgroup"></optgroup>
+            <optgroup label="Your groups" id="publicgroups_optgroup"></optgroup>
+          </select>
+        </div>
+        <div class="tabrow">
+          <span>Load GPX file:
+            <form id="geotag_upload_file_form" action="/gpxupload/preview" target="geotag_upload_file_iframe" enctype="multipart/form-data" method="post" style="display:inline;">
+              <input name="upload_file_input" type="file"/> <input id="geotag_upload_file_preview" type="submit" value="Show"/> <input id="geotag_upload_file_clear" type="submit" value="Clear"/>
+            </form>
+            <iframe name="geotag_upload_file_iframe" style="border:0 none; padding:0; height:0; width:0; position:absolute;"></iframe>
+          </span>
+        </div>
+        <div class="tabrow">
+          <span id="geotag_perpage" style="float:right;">
+            <span id="geotag_perpage_25" class="perpage_num">25</span><span id="geotag_perpage_50" class="perpage_num">50</span><span id="geotag_perpage_100" class="perpage_num">100</span><span id="geotag_perpage_200" class="perpage_num">200</span>
+          </span>
+          <span id="geotag_pager"></span>
+        </div>
+        <div class="tabrow">
+          <span id="geotag_viewas" style="float:right;">
+            <span id="geotag_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="geotag_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="geotag_viewas_detail" class="viewas_type" type="detail">Detail</span>
+          </span>
+          <span id="geotag_operation" style="display:none;">
+            <a id="geotag_set_location" href="javascript:void(0)">Set Location</a> <a id="geotag_clear_location" href="javascript:void(0)">Clear Location</a>
+          </span>
+        </div>
+        <div id="geotag_photolist" class="photolist" style="top:8em;"></div>
+      </div>
+      <div id="phoset_tab" class="tab">
+        <div class="tabrow">
+          <select id="phoset_photoset_list">
+            <option value="0" title="Select">Select photoset...</option>
+          </select>
+        </div>
+<!--
+        <div class="tabrow">
+          <span>Load GPX file:
+            <form id="phoset_upload_file_form" action="/gpxupload/preview" target="phoset_upload_file_iframe" enctype="multipart/form-data" method="post" style="display:inline;">
+              <input name="upload_file_input" type="file"/> <input id="phoset_upload_file_preview" type="submit" value="Show"/> <input id="phoset_upload_file_clear" type="submit" value="Clear"/> <input id="phoset_upload_file_save" type="submit" value="Save"/>
+            </form>
+            <iframe name="phoset_upload_file_iframe" style="border:0 none; padding:0; height:0; width:0; position:absolute;"></iframe>
+          </span>
+        </div>
+-->
+        <div class="tabrow">
+          <span id="phoset_viewas" style="float:right;">
+            <span id="phoset_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="phoset_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="phoset_viewas_detail" class="viewas_type" type="detail">Detail</span>
+          </span>
+        </div>
+        <div id="phoset_photolist" class="photolist" style="top:4em;"></div>
+      </div>
+{% endif %}
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+var gmap = null;
+var mod_ctl = null;
+var settings_ctl = null;
+var showpanel_ctl = null;
+var API_KEY = '{{ API_KEY }}';
+var panelexp = true;
+var showpanelexp = false;
+
+{% if user %}
+var user = { nsid:'{{ user.nsid }}' };
+{% else %}
+var user = null;
+{% endif %}
+
+var ui_ctl = {
+  onResize: function(nopanel) {
+    var h = $(window).height();
+    var w = $(window).width();
+    var $m = $('#map');
+    var $p = $('#panel');
+    var $sp = $('#showpanel');
+
+    var mw = panelexp ? w-$p.width() : w;
+    var mh = h-$m.offset().top;
+    var ph = h-$p.offset().top;
+
+    $('#mainbar').width(mw);
+    $m.css({height:mh, width:mw});
+    $('#tabs').height(mh);
+    $('.sdh').width(mw);
+    $('.sdv').height(mh);
+    $('.sdvr').height(mh);
+    if(nopanel) {
+      $p.css({height:ph});
+    } else {
+      var pr = panelexp ? 0 : -$p.width();
+      $p.css({height:ph, right:pr});
+    }
+
+    $sp.css({height:ph, width:mw});
+
+    $('#panel_toggle').children('img').attr('class', (panelexp?'col':'exp'));
+
+    $('.popup_panel').hide();
+
+    if (gmap) gmap.checkResize();
+
+    if (gmap) ui_ctl._onResize();
+  },
+
+  $refresh_div: null,
+  init: function() {
+    function RefreshControl() {}
+    RefreshControl.prototype = new GControl();
+    RefreshControl.prototype.initialize = function(map) {
+      ui_ctl.$refresh_div = $('#refresh_control');
+      ui_ctl.$refresh_div.click(function(e) {
+        var tagname = e.target.tagName;
+        var clsname = e.target.className;
+
+        if (tagname === 'IMG' && clsname === 'refresh') {
+          if (mod_ctl.getCurrentModCtl().onRefreshClick) {
+            mod_ctl.getCurrentModCtl().onRefreshClick();
+          }
+        } else if (tagname === 'DIV' && clsname === 'selable') {
+          ui_ctl.$refresh_div.find('.selected').attr('class', 'selable');
+          $(e.target).attr('class', 'selected');
+          settings_ctl.saveSetting();
+        }
+      });
+      map.getContainer().appendChild(ui_ctl.$refresh_div.get(0));
+      return ui_ctl.$refresh_div.get(0);
+    };
+    RefreshControl.prototype.getDefaultPosition = function() {
+      return new GControlPosition(G_ANCHOR_TOP_RIGHT, new GSize(20, 50));
+    };
+
+    gmap.addControl(new RefreshControl());
+
+    gmap.getContainer().appendChild($('#focus').get(0));
+    gmap.getContainer().appendChild($('#range_lt').get(0));
+    gmap.getContainer().appendChild($('#range_rb').get(0));
+    this._onResize();
+    this._hideFocus();
+    this._hideRange();
+  },
+  
+  updateSettings: function(sett) {
+    sett.refresh = (this.isAutoRefresh() ? 'auto' : 'manual');
+    sett.browse_perpage = $('#browse_perpage').find('.perpage_curr').text();
+    sett.browse_viewas = $('#browse_viewas').find('.viewas_curr').attr('type');
+    sett.browse_sortby = $('#browse_sortby').find('.sortby_curr').attr('type');
+    if (user) {
+      sett.geotag_perpage = $('#geotag_perpage').find('.perpage_curr').text();
+      sett.geotag_viewas = $('#geotag_viewas').find('.viewas_curr').attr('type');
+      sett.phoset_viewas = $('#phoset_viewas').find('.viewas_curr').attr('type');
+    }
+  },
+  setSettings: function(sett) {
+    if (this.$refresh_div) {
+      if (sett.refresh === 'auto') {
+        this.$refresh_div.find('#sel_auto').attr('class', 'selected');
+        this.$refresh_div.find('#sel_manual').attr('class', 'selable');
+      } else {
+        this.$refresh_div.find('#sel_auto').attr('class', 'selable');
+        this.$refresh_div.find('#sel_manual').attr('class', 'selected');
+      }
+    }
+
+    $('#browse_perpage').find('span').each(function(i) { this.className = 'perpage_num'; });
+    $('#browse_perpage_'+sett.browse_perpage).get(0).className = 'perpage_curr';
+    $('#browse_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
+    $('#browse_viewas_'+sett.browse_viewas).get(0).className = 'viewas_curr';
+    $('#browse_sortby').find('span').each(function(i) { this.className = 'sortby_type'; });
+    $('#browse_sortby_'+sett.browse_sortby).get(0).className = 'sortby_curr';
+
+    if (user) {
+      $('#geotag_perpage').find('span').each(function(i) { this.className = 'perpage_num'; });
+      $('#geotag_perpage_'+sett.geotag_perpage).get(0).className = 'perpage_curr';
+      $('#geotag_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
+      $('#geotag_viewas_'+sett.geotag_viewas).get(0).className = 'viewas_curr';
+
+      $('#phoset_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
+      $('#phoset_viewas_'+sett.phoset_viewas).get(0).className = 'viewas_curr';
+    }
+  },
+
+  isAutoRefresh: function() { 
+    if (!this.$refresh_div) return;
+    return this.$refresh_div.find('#sel_auto').hasClass('selected');
+  },
+
+
+
+  _showRefreshControl: function() {
+    if (!this.$refresh_div) return;
+    this.$refresh_div.show();
+  },
+  _hideRefreshControl: function() {
+    if (!this.$refresh_div) return;
+    this.$refresh_div.hide();
+  },
+  _showFocus: function() { $('#focus').show(); },
+  _hideFocus: function() { $('#focus').hide(); },
+  _showRange: function() { $('#range_lt, #range_rb').show(); },
+  _hideRange: function() { $('#range_lt, #range_rb').hide(); },
+
+  _onResize: function() {
+    var $m = $('#map');
+    var mw = parseInt($m.width()/4);
+    var mh = parseInt($m.height()/4);
+
+    $('#focus').css({top:mh*2-20, left:mw*2-20});
+    $('#range_lt').css({top:mh, left:mw});
+    $('#range_rb').css({top:mh*3, left:mw*3});
+    
+    $('#place_link').css({width:mh*2});
+  },
+
+  beginLoading: function() {
+    $('#loading').show();
+  },
+
+  endLoading: function() {
+    $('#loading').hide();
+  },
+
+  showSaving: function(str) {
+    $('#saving').text(str).show();
+  },
+  hideSaving: function() {
+    $('#saving').hide();
+  },
+            
+  expendPanel: function() {
+    panelexp = true;
+    $('#panel').animate({right:0}, 'fast', ui_ctl.onResize);
+  },
+  closePanel: function() {
+    panelexp = false;
+    ui_ctl.onResize(true);
+    $p = $('#panel');
+    $p.animate({right:-$p.width()}, 'fast');
+  },
+
+  showShowPanel: function() {
+    showpanelexp = true;
+    $('#showpanel').fadeIn('fast');
+    if (gmap) gmap.disableScrollWheelZoom();
+  },
+  hideShowPanel: function() {
+    showpanelexp = false;
+    $('#showpanel').fadeOut('fast');
+    if (gmap) gmap.enableScrollWheelZoom();
+  },
+
+  onActive: function(mod) {
+    switch(mod) {
+      case 'browse':
+        this._showRange();
+        this._showRefreshControl();
+        break;
+      case 'geotag':
+        this._showFocus();
+        break;
+      case 'phoset':
+        break;
+    }
+  },
+
+  onDeActive: function(mod) {
+    switch(mod) {
+      case 'browse':
+        this._hideRange();
+        this._hideRefreshControl();
+        break;
+      case 'geotag':
+        this._hideFocus();
+        break;
+      case 'phoset':
+        break;
+    }
+  },
+            
+  on_message: function(str) {
+    $('#saving').text(str).show();
+    setTimeout(function() { $('#saving').fadeOut('slow'); }, 2000);
+  },
+  on_error: function(str) {
+    $('#error').text(str).show();
+    setTimeout(function() { $('#error').fadeOut('slow'); }, 2000);
+  }
+};
+
+
+ui_ctl.onResize();
+$(window).resize(ui_ctl.onResize);
+
+$('#panel_toggle').click(function() {
+  panelexp = !panelexp;
+  if(panelexp) {
+    ui_ctl.expendPanel();
+  } else {
+    ui_ctl.closePanel();
+  }
+});
+
+$(".switch a").click(function(){
+  mod_ctl.switchTo($(this).attr('id').replace(/_switch/,''));
+});
+
+
+$('#geotag_upload_file_clear').click(function() {
+  mod_ctl.getModCtl('geotag').hideGPX(true);
+  return false;
+});
+$('#geotag_upload_file_preview').click(function() {
+  ui_ctl.beginLoading();
+  $('#geotag_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.geotag_parse_upload_gpx').submit();
+  return false;
+});
+function geotag_parse_upload_gpx(rsp) {
+  try {
+    if (!mod_ctl) return;
+
+    if (rsp.stat !== 'ok') {
+      ui_ctl.on_error(rsp.message);
+    } else {
+      mod_ctl.getModCtl('geotag').showGPX(rsp.gpx);
+    }
+  } finally {
+    ui_ctl.endLoading();
+  }
+}
+
+$('#phoset_upload_file_clear').click(function() {
+  mod_ctl.getModCtl('phoset').hideGPX(true);
+  return false;
+});
+$('#phoset_upload_file_preview').click(function() {
+  ui_ctl.beginLoading();
+  $('#phoset_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.phoset_gpx_preview').submit();
+  return false;
+});
+function phoset_gpx_preview(rsp) {
+  try {
+    if (!mod_ctl) return;
+
+    if (rsp.stat !== 'ok') {
+      ui_ctl.on_error(rsp.message);
+    } else {
+      mod_ctl.getModCtl('phoset').showGPX(rsp.gpx);
+    }
+  } finally {
+    ui_ctl.endLoading();
+  }
+}
+$('#phoset_upload_file_save').click(function() {
+  ui_ctl.beginLoading();
+  $('#phoset_upload_file_form').attr('action','/gpxupload/save?cb=window.parent.phoset_gpx_save').submit();
+  return false;
+});
+function phoset_gpx_save(rsp) {
+  try {
+  } finally {
+    ui_ctl.endLoading();
+  }
+}
+
+
+</script>
+<script type="text/javascript" src="/scripts/jquery.cookie.pack.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps?file=api&amp;v=2.x&amp;key=ABQIAAAA5iyLqLpUbk1qBe2volmsqxSGaeOUwwPiRwprcQIp1asxXaPRShRiXXnXJ0iaG0Cp007xopXguZyRPQ"></script>
+<script type="text/javascript" src="/scripts/flickr-maps.js"></script>
+<script type="text/javascript">
+gmap = new GMap2($('#map').get(0));
+gmap.enableScrollWheelZoom();
+gmap.enableContinuousZoom();
+gmap.disableDoubleClickZoom();
+new GKeyboardHandler(gmap);
+gmap.addMapType(G_PHYSICAL_MAP);
+gmap.addControl(new GHierarchicalMapTypeControl());
+gmap.addControl(new GLargeMapControl());
+gmap.addControl(new GOverviewMapControl());
+gmap.addControl(new GScaleControl());
+
+mod_ctl.getModCtl('common').init();
+
+ui_ctl.init();
+showpanel_ctl.init();
+
+var str = $.cookie('settings');
+if (!str) str = '{}';
+var sett = eval('('+str+')');
+
+if (/^#ll=([\-\d\,\.]+)&z=(\d+)(.*)$/.exec(location.hash)) {
+  var params = RegExp.$3;
+  gmap.setCenter(GLatLng.fromUrlValue(RegExp.$1), parseInt(RegExp.$2,10));
+  
+  if (/mod=([a-z]+)/.exec(params)) sett.mode = RegExp.$1;
+  if (/sort=([a-z]+)/.exec(params)) sett.browse_sortby = RegExp.$1;
+  if (/perpage=(\d+)/.exec(params)) sett.browse_perpage = RegExp.$1;
+  // TODO page
+
+  sett = settings_ctl.loadSetting(sett);
+} else {
+  if(!settings_ctl.loadCookiePos()) {
+    var bounds = new GLatLngBounds(new GLatLng(-40,-100), new GLatLng(40,100)); //new GLatLng(20,0)
+    var zoom = gmap.getBoundsZoomLevel(bounds);
+    gmap.setCenter(bounds.getCenter(), zoom);
+  }
+  sett = settings_ctl.loadSetting(sett);
+}
+
+if (user) {
+  mod_ctl.switchTo(sett.mode);
+  $.cookie('autologin', 'true', {expires:365});
+} else {
+  mod_ctl.switchTo('browse');
+  $.cookie('autologin', 'false', {expires:365});
+}
+</script>
+<script type="text/javascript" src="http://www.google-analytics.com/ga.js"></script>
+<script type="text/javascript">
+if( typeof _gat !== 'undefined') 
+  _gat._getTracker("UA-359113-8")._trackPageview();
+</script>
+</body>
+</html>
