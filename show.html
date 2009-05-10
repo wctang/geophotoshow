@@ -289,13 +289,8 @@ while ( /^(\d+),?(.*)$/.exec(fsetids)) {
 }
 
 gmap = new GMap2($('#map').get(0));
-gmap.enableScrollWheelZoom();
-gmap.enableContinuousZoom();
+gmap.setUIToDefault();
 gmap.disableDoubleClickZoom();
-new GKeyboardHandler(gmap);
-gmap.addMapType(G_PHYSICAL_MAP);
-gmap.addControl(new GHierarchicalMapTypeControl(true));
-gmap.addControl(new GSmallMapControl());
 
 mod_ctl.getModCtl('common').init();
 

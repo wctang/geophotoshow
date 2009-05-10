@@ -115,7 +115,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 #place_link a { display:block; color:#1057AE; }
 #place_link a:hover { color:white; text-decoration:none; background-color:#0063DC; }
 </style>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
 </head>
 
 <body onunload="GUnload()">
@@ -390,7 +390,7 @@ var ui_ctl = {
         } else if (tagname === 'DIV' && clsname === 'selable') {
           ui_ctl.$refresh_div.find('.selected').attr('class', 'selable');
           $(e.target).attr('class', 'selected');
-          settings_ctl.saveSetting();
+          settings_ctl._save();
         }
       });
       map.getContainer().appendChild(ui_ctl.$refresh_div.get(0));
@@ -639,46 +639,38 @@ function phoset_gpx_save(rsp) {
 <script type="text/javascript" src="/scripts/flickr-maps.js"></script>
 <script type="text/javascript">
 gmap = new GMap2($('#map').get(0));
-gmap.enableScrollWheelZoom();
-gmap.enableContinuousZoom();
+gmap.setUIToDefault();
 gmap.disableDoubleClickZoom();
-new GKeyboardHandler(gmap);
-gmap.addMapType(G_PHYSICAL_MAP);
-gmap.addControl(new GHierarchicalMapTypeControl());
-gmap.addControl(new GLargeMapControl());
 gmap.addControl(new GOverviewMapControl());
-gmap.addControl(new GScaleControl());
 
 mod_ctl.getModCtl('common').init();
 
 ui_ctl.init();
 showpanel_ctl.init();
-
-var str = $.cookie('settings');
-if (!str) str = '{}';
-var sett = eval('('+str+')');
+settings_ctl._init();
 
 if (/^#ll=([\-\d\,\.]+)&z=(\d+)(.*)$/.exec(location.hash)) {
   var params = RegExp.$3;
   gmap.setCenter(GLatLng.fromUrlValue(RegExp.$1), parseInt(RegExp.$2,10));
 
-  if (/mod=([a-z]+)/.exec(params)) sett.mode = RegExp.$1;
-  if (/sort=([a-z]+)/.exec(params)) sett.browse_sortby = RegExp.$1;
-  if (/perpage=(\d+)/.exec(params)) sett.browse_perpage = RegExp.$1;
+  if (/mod=([a-z]+)/.exec(params))  settings_ctl.mode = RegExp.$1;
+  if (/sort=([a-z]+)/.exec(params)) settings_ctl.browse_sortby = RegExp.$1;
+  if (/perpage=(\d+)/.exec(params)) settings_ctl.browse_perpage = RegExp.$1;
   // TODO page
 
-  sett = settings_ctl.loadSetting(sett);
+  ui_ctl.setSettings(settings_ctl);
 } else {
-  if(!settings_ctl.loadCookiePos()) {
+  if(!settings_ctl._load_cookie_pos()) {
     var bounds = new GLatLngBounds(new GLatLng(-40,-100), new GLatLng(40,100)); //new GLatLng(20,0)
     var zoom = gmap.getBoundsZoomLevel(bounds);
     gmap.setCenter(bounds.getCenter(), zoom);
   }
-  sett = settings_ctl.loadSetting(sett);
+
+  ui_ctl.setSettings(settings_ctl);
 }
 
 if (user) {
-  mod_ctl.switchTo(sett.mode);
+  mod_ctl.switchTo(settings_ctl.mode);
   $.cookie('autologin', 'true', {expires:365});
 } else {
   mod_ctl.switchTo('browse');
