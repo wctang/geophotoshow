@@ -6,7 +6,7 @@
 <title>GeoPhotoShow - geotagging photos</title>
 <style type="text/css">
 
-body { margin:0; overflow:hidden; color:black; font-family:Arial,sans-serif; }
+body { margin:0; padding:0; overflow:hidden; color:black; font-family:Arial,sans-serif; }
 img { border:0; }
 *:focus { outline:none }
 
@@ -27,9 +27,9 @@ div.selable       { width:62px; height:20px; background:transparent url(/images/
 div.selable:hover {                          background:transparent url(/images/icons.png) no-repeat scroll -38px -207px; color:white; }
 div.selected      { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; line-height:20px; font-weight:bold; }
 
-.sdh   { position:absolute; left:0px; top:1.7em; height:5px; }
-.sdv   { position:absolute; left:0px; top:1.7em; width:5px; }
-.sdvr  { position:absolute; left:-6px; top:1.7em; width:5px; }
+.sdh   { position:absolute; left:0px; top:27px; height:5px; }
+.sdv   { position:absolute; left:0px; top:27px; width:5px; }
+.sdvr  { position:absolute; left:-6px; top:27px; width:5px; }
 .sdh  div { width:100%; }
 .sdv  div { height:100%; }
 .sdvr div { height:100%; right:-1px; }
@@ -46,24 +46,24 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 #saving  { position:absolute; left:47%; top:0px; padding:3px 10px; background-color:#FFF1A8; font-size:84%; font-weight:bold; display:none; }
 #error  { position:absolute; left:47%; top:0px; padding:3px 10px; background-color:red; font-size:84%; font-weight:bold; display:none; }
 
-#userbar { text-align:right; margin-right:10px; font-size:84%; }
+#userbar { float:right; margin-right:10px; font-size:84%; height:20px; }
 
-#header { position:relative; width:100%; height:50px; }
+#header { height:40px; }
  #logo { float:left; padding:6px 10px; }
  #logo a { text-decoration:none; }
- #title { font-size:28px; font-weight:bold; padding-left:10px; }
+ #title { font-size:24px; font-weight:bold; padding-left:10px; }
 
 #content { position:relative; width:100%; overflow:hidden; }
-#panel { position:absolute; width:450px; top:0; z-index:10; background-color:white; }
+#panel { position:absolute; width:450px; top:0; right:0; z-index:10; background-color:white; }
 
-.bar { position:relative; height:1.7em; line-height:1.7em; }
+.bar { position:relative; height:27px; line-height:27px; }
 .bar span { font-size:80%; margin-left:10px; }
 .switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:auto; }
 #mainbar span { float:right; padding-right:2em; }
 
 #tabs { position:relative; font-size:80%; background-color:white; }
 .tab { position:absolute; top:6px; left:6px; bottom:6px; right:6px; overflow:hidden; display:none; }
-.tab .tabrow { height: 2em; line-height: 2em; }
+.tab .tabrow { line-height: 2em; }
 
 .pager_prev,
 .pager_next { margin-right:3px; padding:3px 3px; color:#808185; cursor:pointer; }
@@ -81,6 +81,13 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 .viewas_curr,
 .sortby_curr { margin-right:3px; padding:2px 4px; color:white;   border:1px solid #808185; background-color:#808185; font-weight:bold; }
 
+.taglist { position:absolute; left:0; right:0; overflow-x:hidden; overflow-y:auto; }
+.taglist div { width:420px; font-size:100%; line-height:1.5em; }
+.taglist span.tag,       .taglist_clear { cursor:pointer; padding:1px 3px; }
+.taglist span.tag:hover, .taglist_clear:hover { background-color:lightblue; }
+.taglist span.tag_curr { padding:1px 3px; color:white; background-color:#808185; }
+.taglist span.tag { cursor:pointer; padding:1px 3px; }
+.taglist span.tag:hover { background-color:lightblue; }
 
 .photolist { position:absolute; left:0; right:0; bottom:0; overflow-x:hidden; overflow-y:auto; }
 .photolist div.panel { width:420px; }
@@ -112,10 +119,8 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 #showpanel #showpanel_switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:auto; }
 #showpanel img.buddy { float:left; margin:3px 8px; }
 
-#place_link a { display:block; color:#1057AE; }
-#place_link a:hover { color:white; text-decoration:none; background-color:#0063DC; }
+.popup_panel { font-size:small; background-color:#E8ECF9; border:1px solid #AABEF3; }
 </style>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
 </head>
 
 <body onunload="GUnload()">
@@ -126,23 +131,25 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 
 <div id="userbar">
 {% if user %}
-<b>{{ user.username }}@<a href="http://www.flickr.com/"><img src="/images/icon_flickr.gif"/></a> </b>
+  <b>{{ user.username }}@<a href="http://www.flickr.com/"><img src="/images/icon_flickr.gif"/></a> </b>
 {% else %}
   <a href="/flickr/login">Sign in <img src="/images/icon_flickr.gif"/></a>
 {% endif %}
- | <a target="_blank" href="http://docs.google.com/View?docID=dxtw5pn_11328mg6dg9">Help</a> | <a href="http://groups.google.com/group/geophotoshow"><span style="color:red;">Bug report</span></a>
+<!--
+  | <a target="_blank" href="http://docs.google.com/View?docID=dxtw5pn_11328mg6dg9">Help</a> | <a href="http://groups.google.com/group/geophotoshow">Bug report</a>
+-->
 {% if user %}
  | <a href="/flickr/logout">Sign out</a>
 {% endif %}
-
 </div>
 
 <div id="header">
-  <div id="logo"><a href="//www.geophotoshow.com/"><span id="title"><span style="color:#0161dc;">GeoPhoto</span><span style="color:#ff007c;">Show</span></span></a> <span style="font-size:10pt; color:gray;">beta!</span></span></div>
+  <div id="logo"><a href="//www.geophotoshow.com/"><span id="title"><span style="color:#0161dc;">GeoPhoto</span><span style="color:#ff007c;">Show</span></span></a></div>
+<!--
   <div style="float:right; margin:10px 10px 0 0;">
     <a target="_blank" href="https://www.paypal.com/xclick/business=wctang@gmail.com&item_name=geophotoshow&no_note=1&currency_code=USD"><img class="notsowide" src="/images/paypal_en.gif"/></a>
   </div>
-</a>
+-->
 </div>
 
 <div id="content">
@@ -151,22 +158,22 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
       <a id="links_currentmap" target="_blank" style="display:none;"><img class="link" src="/images/transparent.png"/>Link to this map</a>
       <a id="links_photoset" style="display:none;"><img class="link" src="/images/transparent.png"/>Link</a>
     </span>
-    <div id="links_currentmap_panel" class="popup_panel" style="position:absolute; float:right; top:-1.7em; right:10px; z-index:7; width:100px; height:100px; padding:5px 5px 10px 10px; font-size:small; background-color:#E8ECF9; border:1px solid #AABEF3; display:none;">
-      <img class="close" src="/images/transparent.png" style="float:right;" onclick="$(this.parentNode).hide();"/>
+    <div id="links_currentmap_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">
+      <img class="close" src="/images/transparent.png" style="float:right;"/>
       <div>Copy and paste the URL below:<br/>
-      <input id="links_currentmap_url" type="text" tabindex="400" style="width:29em;" onclick="this.select();"/></div>
+      <input id="links_currentmap_url" type="text" tabindex="400" style="width:29em;"/></div>
     </div>
-    <div id="links_photoset_panel" class="popup_panel" style="position:absolute; top:1.7em; right:10px; z-index:7; padding:5px 5px 10px 10px; font-size:small; background-color:#E8ECF9; border:1px solid #AABEF3; display:none;">
-      <img class="close" src="/images/transparent.png" style="float:right;" onclick="$(this.parentNode).hide();"/>
+    <div id="links_photoset_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">
+      <img class="close" src="/images/transparent.png" style="float:right;"/>
       <div>Paste link in <b>email</b> or <b>IM</b><br/>
-      <input id="links_photoset_url" type="text" tabindex="400" style="width:29em;" onclick="this.select();"/></div>
+      <input id="links_photoset_url" type="text" tabindex="400" style="width:29em;"/></div>
       <div>Paste HTML to embed in website<br/>
-      <input id="links_photoset_html" type="text" tabindex="401" style="width:29em;" onclick="this.select();"/></div>
+      <input id="links_photoset_html" type="text" tabindex="401" style="width:29em;"/></div>
     </div>
   </div>
   <div id="screenrange" style="display:none;">
     <div id="focus" class="range"><div class="vline" style="top:0px; left:20px; height:41px;"></div><div class="hline" style="top:20px; left:0px; width:41px;"></div></div>
-    <div id="range_lt" class="range"><div id="place_link" style="position:absolute; bottom:0;"></div><div class="vline" style="top:0px; left:0px; height:100px;"></div><div class="hline" style="top:0px; left:0px; width:100px;"></div></div>
+    <div id="range_lt" class="range"><div class="vline" style="top:0px; left:0px; height:100px;"></div><div class="hline" style="top:0px; left:0px; width:100px;"></div></div>
     <div id="range_rb" class="range"><div class="vline" style="bottom:0px; right:0px; height:100px;"></div><div class="hline" style="bottom:0px; right:0px; width:100px;"></div></div>
   </div>
   <div id="refresh_control" style="text-align:center; font-size:11pt; display:none;">
@@ -181,11 +188,11 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
     <div class="bar" style="background-color:#D5DDF3;">
       <img class="close" src="/images/transparent.png" style="float:right; margin:5px 20px;"/>
     </div>
-    <div id="showpanel_content" style="position:absolute; top:1.7em; bottom:0; right:0; left:0; overflow:auto;">
+    <div id="showpanel_content" style="position:absolute; top:27px; bottom:0; right:0; left:0; overflow:auto;">
       <div style="margin:auto; width:500px; padding:3px 0 10px 0;">
         <h1><a class="title" target="_blank"></a></h1>
         <div style="margin-top:1em;">
-          <a class="buddyurl" target="_blank"><img class="buddy"></img></a>
+          <a class="buddyurl" target="_blank"><img class="buddy" /></a>
           <span>From <a class="owner" target="_blank"></a></span><br/>
           <span>Posted on <a class="uploaddate" target="_blank"></a>, Taken on <a class="takendate" target="_blank"></a></span>
         </div>
@@ -224,7 +231,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
     </div>
     <div id="tabs">
       <div id="browse_tab" class="tab">
-        <div class="tabrow">
+        <div class="tabrow" style="height:2em;">
           <select id="browse_type">
             <option value="all" title="Search all photos.">All Photos</option>
 {% if user %}
@@ -233,16 +240,20 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 {% endif %}
           </select>
         </div>
-        <div class="tabrow">
+        <div class="tabrow" style="height:2em;">
           <form id="browse_query" style="margin:0; padding:0;"><input type="text" style="width:350px;"/> <input type="submit" value="Search"/></form>
         </div>
-        <div class="tabrow">
+        <div class="tabrow" style="height:10em;">
+		<div><span id="plac"></span><span class="taglist_clear" style="float:right;">Clear</span></div>
+		<div id="browse_taglist" class="taglist" style="height:7.5em;"></div>
+        </div>
+        <div class="tabrow" style="height:2em;">
           <span id="browse_perpage" style="float:right;">
             <span id="browse_perpage_25" class="perpage_num">25</span><span id="browse_perpage_50" class="perpage_num">50</span><span id="browse_perpage_100" class="perpage_num">100</span><span id="browse_perpage_200" class="perpage_num">200</span>
           </span>
           <span id="browse_pager"></span>
         </div>
-        <div class="tabrow">
+        <div class="tabrow" style="height:2em;">
           <span id="browse_viewas" style="float:right;">
             <span id="browse_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="browse_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="browse_viewas_detail" class="viewas_type" type="detail">Detail</span>
           </span>
@@ -250,11 +261,11 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
             <span id="browse_sortby_posted" class="sortby_type" type="posted">Date</span><span id="browse_sortby_interestingness" class="sortby_type" type="interestingness">Rank</span>
           </span>
         </div>
-        <div id="browse_photolist" class="photolist" style="top:8em;"></div>
+        <div id="browse_photolist" class="photolist" style="top:18.5em;"></div>
       </div>
 {% if user %}
       <div id="geotag_tab" class="tab">
-        <div class="tabrow">
+        <div class="tabrow" style="height:2em;">
           <select id="geotag_filter">
             <option value="0" title="Select">Select filter...</option>
             <option value="all" title="All your content">All your content</option>
@@ -270,7 +281,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
             <optgroup label="Your groups" id="publicgroups_optgroup"></optgroup>
           </select>
         </div>
-        <div class="tabrow">
+        <div class="tabrow" style="height:2em;">
           <span>Load GPX file:
             <form id="geotag_upload_file_form" action="/gpxupload/preview" target="geotag_upload_file_iframe" enctype="multipart/form-data" method="post" style="display:inline;">
               <input name="upload_file_input" type="file"/> <input id="geotag_upload_file_preview" type="submit" value="Show"/> <input id="geotag_upload_file_clear" type="submit" value="Clear"/>
@@ -278,13 +289,13 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
             <iframe name="geotag_upload_file_iframe" style="border:0 none; padding:0; height:0; width:0; position:absolute;"></iframe>
           </span>
         </div>
-        <div class="tabrow">
+        <div class="tabrow" style="height:2em;">
           <span id="geotag_perpage" style="float:right;">
             <span id="geotag_perpage_25" class="perpage_num">25</span><span id="geotag_perpage_50" class="perpage_num">50</span><span id="geotag_perpage_100" class="perpage_num">100</span><span id="geotag_perpage_200" class="perpage_num">200</span>
           </span>
           <span id="geotag_pager"></span>
         </div>
-        <div class="tabrow">
+        <div class="tabrow" style="height:2em;">
           <span id="geotag_viewas" style="float:right;">
             <span id="geotag_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="geotag_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="geotag_viewas_detail" class="viewas_type" type="detail">Detail</span>
           </span>
@@ -295,7 +306,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
         <div id="geotag_photolist" class="photolist" style="top:8em;"></div>
       </div>
       <div id="phoset_tab" class="tab">
-        <div class="tabrow">
+        <div class="tabrow" style="height:2em;">
           <select id="phoset_photoset_list">
             <option value="0" title="Select">Select photoset...</option>
           </select>
@@ -310,7 +321,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
           </span>
         </div>
 -->
-        <div class="tabrow">
+        <div class="tabrow" style="height:2em;">
           <span id="phoset_viewas" style="float:right;">
             <span id="phoset_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="phoset_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="phoset_viewas_detail" class="viewas_type" type="detail">Detail</span>
           </span>
@@ -323,21 +334,16 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 </div>
 
 <script type="text/javascript">
-var gmap = null;
-var mod_ctl = null;
+var gmap = null, user = null, API_KEY = '{{ API_KEY }}', mod_ctl = null, showpanel_ctl = null, ui_ctl = null;
 var settings_ctl = null;
-var showpanel_ctl = null;
-var API_KEY = '{{ API_KEY }}';
 var panelexp = true;
 var showpanelexp = false;
 
 {% if user %}
-var user = { nsid:'{{ user.nsid }}' };
-{% else %}
-var user = null;
+user = { nsid:'{{ user.nsid }}' };
 {% endif %}
 
-var ui_ctl = {
+ui_ctl = {
   onResize: function(nopanel) {
     var h = $(window).height();
     var w = $(window).width();
@@ -367,6 +373,8 @@ var ui_ctl = {
     $('#panel_toggle').children('img').attr('class', (panelexp?'col':'exp'));
 
     $('.popup_panel').hide();
+    $('.popup_panel .close').click(function(){ $(this.parentNode).hide(); });
+    $('.popup_panel input').click(function(){ this.select(); });
 
     if (gmap) gmap.checkResize();
 
@@ -478,8 +486,6 @@ var ui_ctl = {
     $('#focus').css({top:mh*2-20, left:mw*2-20});
     $('#range_lt').css({top:mh, left:mw});
     $('#range_rb').css({top:mh*3, left:mw*3});
-
-    $('#place_link').css({width:mh*2});
   },
 
   beginLoading: function() {
@@ -519,9 +525,14 @@ var ui_ctl = {
     if (gmap) gmap.enableScrollWheelZoom();
   },
 
+	savePosition: function() {
+		$.cookie('currpos', gmap.getCenter().toUrlValue()+','+gmap.getZoom(), {path:'/', expires:365});
+	},
+
   onActive: function(mod) {
     switch(mod) {
       case 'browse':
+        this._showFocus();
         this._showRange();
         this._showRefreshControl();
         break;
@@ -536,6 +547,7 @@ var ui_ctl = {
   onDeActive: function(mod) {
     switch(mod) {
       case 'browse':
+        this._hideFocus();
         this._hideRange();
         this._hideRefreshControl();
         break;
@@ -556,131 +568,213 @@ var ui_ctl = {
     setTimeout(function() { $('#error').fadeOut('slow'); }, 2000);
   }
 };
-
-
-ui_ctl.onResize();
-$(window).resize(ui_ctl.onResize);
-
-$('#panel_toggle').click(function() {
-  panelexp = !panelexp;
-  if(panelexp) {
-    ui_ctl.expendPanel();
-  } else {
-    ui_ctl.closePanel();
-  }
-});
-
-$(".switch a").click(function(){
-  mod_ctl.switchTo($(this).attr('id').replace(/_switch/,''));
-});
-
-
-$('#geotag_upload_file_clear').click(function() {
-  mod_ctl.getModCtl('geotag').hideGPX(true);
-  return false;
-});
-$('#geotag_upload_file_preview').click(function() {
-  ui_ctl.beginLoading();
-  $('#geotag_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.geotag_parse_upload_gpx').submit();
-  return false;
-});
-function geotag_parse_upload_gpx(rsp) {
-  try {
-    if (!mod_ctl) return;
-
-    if (rsp.stat !== 'ok') {
-      ui_ctl.on_error(rsp.message);
-    } else {
-      mod_ctl.getModCtl('geotag').showGPX(rsp.gpx);
-    }
-  } finally {
-    ui_ctl.endLoading();
-  }
-}
-
-$('#phoset_upload_file_clear').click(function() {
-  mod_ctl.getModCtl('phoset').hideGPX(true);
-  return false;
-});
-$('#phoset_upload_file_preview').click(function() {
-  ui_ctl.beginLoading();
-  $('#phoset_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.phoset_gpx_preview').submit();
-  return false;
-});
-function phoset_gpx_preview(rsp) {
-  try {
-    if (!mod_ctl) return;
-
-    if (rsp.stat !== 'ok') {
-      ui_ctl.on_error(rsp.message);
-    } else {
-      mod_ctl.getModCtl('phoset').showGPX(rsp.gpx);
-    }
-  } finally {
-    ui_ctl.endLoading();
-  }
-}
-$('#phoset_upload_file_save').click(function() {
-  ui_ctl.beginLoading();
-  $('#phoset_upload_file_form').attr('action','/gpxupload/save?cb=window.parent.phoset_gpx_save').submit();
-  return false;
-});
-function phoset_gpx_save(rsp) {
-  try {
-  } finally {
-    ui_ctl.endLoading();
-  }
-}
-
-
 </script>
-<script type="text/javascript" src="/scripts/jquery.cookie.pack.js"></script>
+
 <script type="text/javascript" src="http://maps.google.com/maps?file=api&amp;v=2.x&amp;key=ABQIAAAA5iyLqLpUbk1qBe2volmsqxSGaeOUwwPiRwprcQIp1asxXaPRShRiXXnXJ0iaG0Cp007xopXguZyRPQ"></script>
-<script type="text/javascript" src="/scripts/flickr-maps.js"></script>
 <script type="text/javascript">
-gmap = new GMap2($('#map').get(0));
+function getwins() {
+	if(document.innerWidth)
+		return [document.innerWidth, document.innerHeight];
+	if(!(document.documentElement.clientHeight == 0))
+		return [document.documentElement.clientWidth, document.documentElement.clientHeight];
+	return [document.body.clientWidth, document.body.clientHeight];
+}
+
+var ss = getwins();
+var mm = document.getElementById('map');
+mm.style.width = (ss[0]-450)+'px'; // panel width
+mm.style.height = (ss[1]-40-27)+'px'; // header + mainbar height
+
+gmap = new GMap2(mm);
 gmap.setUIToDefault();
 gmap.disableDoubleClickZoom();
 gmap.addControl(new GOverviewMapControl());
 
-mod_ctl.getModCtl('common').init();
+function cookieget(name) {
+	var ret = null;
+	if (!document.cookie || document.cookie == '')
+		return ret;
+	var cookies = document.cookie.split(';');
+	for (var i = 0; i < cookies.length; i++) {
+		var cookie = cookies[i].replace(/(^\s*)|(\s*$)/g, '');
+		if (cookie.substring(0, name.length + 1) == (name + '=')) {
+			ret = decodeURIComponent(cookie.substring(name.length + 1));
+			break;
+		}
+	}
+	return ret;
+}
 
-ui_ctl.init();
-showpanel_ctl.init();
-settings_ctl._init();
-
+var geostr = cookieget('currpos');
 if (/^#ll=([\-\d\,\.]+)&z=(\d+)(.*)$/.exec(location.hash)) {
-  var params = RegExp.$3;
-  gmap.setCenter(GLatLng.fromUrlValue(RegExp.$1), parseInt(RegExp.$2,10));
-
-  if (/mod=([a-z]+)/.exec(params))  settings_ctl.mode = RegExp.$1;
-  if (/sort=([a-z]+)/.exec(params)) settings_ctl.browse_sortby = RegExp.$1;
-  if (/perpage=(\d+)/.exec(params)) settings_ctl.browse_perpage = RegExp.$1;
-  // TODO page
-
-  ui_ctl.setSettings(settings_ctl);
+	var params = RegExp.$3;
+	gmap.setCenter(GLatLng.fromUrlValue(RegExp.$1), parseInt(RegExp.$2,10));
+} else if (geostr) {
+	var pos = geostr.split(',');
+	gmap.setCenter(new GLatLng(parseFloat(pos[0]),parseFloat(pos[1])), parseInt(pos[2],10));
 } else {
-  if(!settings_ctl._load_cookie_pos()) {
-    var bounds = new GLatLngBounds(new GLatLng(-40,-100), new GLatLng(40,100)); //new GLatLng(20,0)
-    var zoom = gmap.getBoundsZoomLevel(bounds);
-    gmap.setCenter(bounds.getCenter(), zoom);
-  }
-
-  ui_ctl.setSettings(settings_ctl);
+	var bounds = new GLatLngBounds(new GLatLng(-40,-100), new GLatLng(40,100)); //new GLatLng(20,0)
+	var zoom = gmap.getBoundsZoomLevel(bounds);
+	gmap.setCenter(bounds.getCenter(), zoom);
 }
 
-if (user) {
-  mod_ctl.switchTo(settings_ctl.mode);
-  $.cookie('autologin', 'true', {expires:365});
-} else {
-  mod_ctl.switchTo('browse');
-  $.cookie('autologin', 'false', {expires:365});
+
+var jq_loaded = false, jq_notrun = true, mp_loaded = false, mp_notrun = true, an_loaded = false, an_notrun = true;
+
+function init() {
+
+if (jq_loaded && jq_notrun) {
+	jq_notrun = false;
+
+	// http://dev.jquery.com/browser/trunk/plugins/cookie/jquery.cookie.min.js r6165
+	jQuery.cookie=function(name,value,options){if(typeof value!='undefined'){options=options||{};if(value===null){value='';options=$.extend({},options);options.expires=-1;}var expires='';if(options.expires&&(typeof options.expires=='number'||options.expires.toUTCString)){var date;if(typeof options.expires=='number'){date=new Date();date.setTime(date.getTime()+(options.expires*24*60*60*1000));}else{date=options.expires;}expires='; expires='+date.toUTCString();}var path=options.path?'; path='+(options.path):'';var domain=options.domain?'; domain='+(options.domain):'';var secure=options.secure?'; secure':'';document.cookie=[name,'=',encodeURIComponent(value),expires,path,domain,secure].join('');}else{var cookieValue=null;if(document.cookie&&document.cookie!=''){var cookies=document.cookie.split(';');for(var i=0;i<cookies.length;i++){var cookie=jQuery.trim(cookies[i]);if(cookie.substring(0,name.length+1)==(name+'=')){cookieValue=decodeURIComponent(cookie.substring(name.length+1));break;}}}return cookieValue;}};
+
+	ui_ctl.onResize();
+	$(window).resize(ui_ctl.onResize);
+
+	$('#panel_toggle').click(function() {
+		panelexp = !panelexp;
+		if(panelexp) {
+			ui_ctl.expendPanel();
+		} else {
+			ui_ctl.closePanel();
+		}
+	});
+
+	$(".switch a").click(function(){
+		mod_ctl.switchTo($(this).attr('id').replace(/_switch/,''));
+	});
+
+
+	$('#geotag_upload_file_clear').click(function() {
+		mod_ctl.getModCtl('geotag').hideGPX(true);
+		return false;
+	});
+	$('#geotag_upload_file_preview').click(function() {
+		ui_ctl.beginLoading();
+		$('#geotag_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.geotag_parse_upload_gpx').submit();
+		return false;
+	});
+	window.geotag_parse_upload_gpx = function(rsp) {
+		try {
+			if (!mod_ctl) return;
+
+			if (rsp.stat !== 'ok') {
+				ui_ctl.on_error(rsp.message);
+			} else {
+				mod_ctl.getModCtl('geotag').showGPX(rsp.gpx);
+			}
+		} finally {
+			ui_ctl.endLoading();
+		}
+	};
+
+/*
+	$('#phoset_upload_file_clear').click(function() {
+		mod_ctl.getModCtl('phoset').hideGPX(true);
+		return false;
+	});
+	$('#phoset_upload_file_preview').click(function() {
+		ui_ctl.beginLoading();
+		$('#phoset_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.phoset_gpx_preview').submit();
+		return false;
+	});
+	window.phoset_gpx_preview = function(rsp) {
+		try {
+			if (!mod_ctl) return;
+
+			if (rsp.stat !== 'ok') {
+				ui_ctl.on_error(rsp.message);
+			} else {
+				mod_ctl.getModCtl('phoset').showGPX(rsp.gpx);
+			}
+		} finally {
+			ui_ctl.endLoading();
+		}
+	};
+
+	$('#phoset_upload_file_save').click(function() {
+		ui_ctl.beginLoading();
+		$('#phoset_upload_file_form').attr('action','/gpxupload/save?cb=window.parent.phoset_gpx_save').submit();
+		return false;
+	});
+	window.phoset_gpx_save = function(rsp) {
+		try {
+		} finally {
+			ui_ctl.endLoading();
+		}
+	};
+*/
 }
-</script>
-<script type="text/javascript" src="http://www.google-analytics.com/ga.js"></script>
-<script type="text/javascript">
-if( typeof _gat !== 'undefined')
-  _gat._getTracker("UA-359113-8")._trackPageview();
+
+if (jq_loaded && mp_loaded && mp_notrun) {
+	mp_notrun = false;
+
+
+// One-shot position request.
+//navigator.geolocation.getCurrentPosition(function (position) {
+//	console.log(position.coords.latitude, position.coords.longitude, position.coords.altitude, position.coords.accuracy);
+//});
+
+//var geo = google.gears.factory.create('beta.geolocation');
+//geo.getCurrentPosition(function(position) {
+//  updateMap(position.latitude, position.longitude);
+//});
+
+	mod_ctl.getModCtl('common').init();
+
+	ui_ctl.init();
+	showpanel_ctl.init();
+	settings_ctl._init();
+
+	if (/^#ll=([\-\d\,\.]+)&z=(\d+)(.*)$/.exec(location.hash)) {
+		var params = RegExp.$3;
+		if (/mod=([a-z]+)/.exec(params))  settings_ctl.mode = RegExp.$1;
+		if (/sort=([a-z]+)/.exec(params)) settings_ctl.browse_sortby = RegExp.$1;
+		if (/perpage=(\d+)/.exec(params)) settings_ctl.browse_perpage = RegExp.$1;
+	}
+
+	ui_ctl.setSettings(settings_ctl);
+
+	if (user) {
+		mod_ctl.switchTo(settings_ctl.mode);
+		$.cookie('autologin', 'true', {expires:365});
+	} else {
+		mod_ctl.switchTo('browse');
+		$.cookie('autologin', 'false', {expires:365});
+	}
+}
+
+if (jq_loaded && mp_loaded && an_loaded && an_notrun) {
+	an_notrun = false;
+
+	if( typeof _gat !== 'undefined')
+		_gat._getTracker("UA-359113-8")._trackPageview();
+}
+
+};
+
+function loadjs(path, cb) {
+	var jo = document.createElement('script');
+	jo.done = false;
+	jo.onload = function() { jo.done = true; cb(); };
+	jo.onreadystatechange = function() { if ('loaded' === jo.readyState && !jo.done) { jo.done = true; cb(); } };
+	jo.src = path;
+	document.getElementsByTagName('head')[0].appendChild(jo);
+}
+
+loadjs('http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js', function() {
+	jq_loaded = true;
+	init();
+});
+loadjs("/scripts/flickr-maps.js", function() {
+	mp_loaded = true;
+	init();
+});
+loadjs('http://www.google-analytics.com/ga.js', function() {
+	an_loaded = true;
+	init();
+});
 </script>
 </body>
 </html>

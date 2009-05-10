@@ -115,7 +115,6 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 #showpanel #showpanel_switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:auto; }
 #showpanel img.buddy { float:left; margin:3px 8px; }
 </style>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
 </head>
 
 <body onunload="GUnload()">
@@ -178,19 +177,15 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 </div>
 
 <script type="text/javascript">
-var gmap = null;
-var mod_ctl = null;
-var showpanel_ctl = null;
-var API_KEY = '{{ API_KEY }}';
+var gmap = null, user = null, API_KEY = '{{ API_KEY }}', mod_ctl = null, showpanel_ctl = null, ui_ctl = null;
 var panelexp = false;
 var showpanelexp = false;
 
-var user = null;
 var params = '{{ params }}';
 var fsetids = '{{ fsetids }}';
 var gpxids = '{{ gpxids }}';
 
-var ui_ctl = {
+ui_ctl = {
   onResize: function(nopanel) {
     var h = $(window).height();
     var w = $(window).width();
@@ -254,6 +249,10 @@ var ui_ctl = {
     if (gmap) gmap.enableScrollWheelZoom();
   },
 
+	savePosition: function() {
+		$.cookie('currpos', gmap.getCenter().toUrlValue()+','+gmap.getZoom(), {path:'/', expires:365});
+	},
+
   onActive: function(mod) {},
   onDeActive: function(mod) {},
 
@@ -262,50 +261,90 @@ var ui_ctl = {
     $('#error').text(str).show();
   }
 };
+</script>
 
-ui_ctl.onResize();
-$(window).resize(ui_ctl.onResize);
+<script type="text/javascript" src="http://maps.google.com/maps?file=api&amp;v=2.x&amp;key=ABQIAAAA5iyLqLpUbk1qBe2volmsqxSGaeOUwwPiRwprcQIp1asxXaPRShRiXXnXJ0iaG0Cp007xopXguZyRPQ"></script>
+<script type="text/javascript">
 
-$('#panel_toggle').click(function() {
-  panelexp = !panelexp;
-  if(panelexp) {
-    ui_ctl.expendPanel();
-  } else {
-    ui_ctl.closePanel();
-  }
+var jq_loaded = false, jq_notrun = true, mp_loaded = false, mp_notrun = true, an_loaded = false, an_notrun = true;
+function init() {
+
+if (jq_loaded && jq_notrun) {
+	jq_notrun = false;
+
+	// http://dev.jquery.com/browser/trunk/plugins/cookie/jquery.cookie.min.js r6165
+	jQuery.cookie=function(name,value,options){if(typeof value!='undefined'){options=options||{};if(value===null){value='';options=$.extend({},options);options.expires=-1;}var expires='';if(options.expires&&(typeof options.expires=='number'||options.expires.toUTCString)){var date;if(typeof options.expires=='number'){date=new Date();date.setTime(date.getTime()+(options.expires*24*60*60*1000));}else{date=options.expires;}expires='; expires='+date.toUTCString();}var path=options.path?'; path='+(options.path):'';var domain=options.domain?'; domain='+(options.domain):'';var secure=options.secure?'; secure':'';document.cookie=[name,'=',encodeURIComponent(value),expires,path,domain,secure].join('');}else{var cookieValue=null;if(document.cookie&&document.cookie!=''){var cookies=document.cookie.split(';');for(var i=0;i<cookies.length;i++){var cookie=jQuery.trim(cookies[i]);if(cookie.substring(0,name.length+1)==(name+'=')){cookieValue=decodeURIComponent(cookie.substring(name.length+1));break;}}}return cookieValue;}};
+
+	ui_ctl.onResize();
+	$(window).resize(ui_ctl.onResize);
+
+	$('#panel_toggle').click(function() {
+		panelexp = !panelexp;
+		if(panelexp) {
+			ui_ctl.expendPanel();
+		} else {
+			ui_ctl.closePanel();
+		}
+	});
+}
+
+if (jq_loaded && mp_loaded && mp_notrun) {
+	mp_notrun = false;
+
+	var flickr_photoset_ids = [];
+
+	while ( /^(\d+),?(.*)$/.exec(fsetids)) {
+		var id = RegExp.$1;
+		fsetids = RegExp.$2;
+		flickr_photoset_ids.push(id);
+	}
+
+	gmap = new GMap2($('#map').get(0));
+	gmap.setUIToDefault();
+	gmap.disableDoubleClickZoom();
+
+	mod_ctl.getModCtl('common').init();
+
+	showpanel_ctl.init();
+	showpanel_ctl.setAutoResize(true);
+
+	var show_ctl = mod_ctl.switchTo('show');
+	for (var i=0,n=flickr_photoset_ids.length; i<n; ++i) {
+		show_ctl.loadPhotoSet(flickr_photoset_ids[i]);
+	}
+}
+
+if (jq_loaded && mp_loaded && an_loaded && an_notrun) {
+	an_notrun = false;
+
+	if( typeof _gat !== 'undefined')
+		_gat._getTracker("UA-359113-8")._trackPageview();
+}
+
+}
+
+function loadjs(path, cb) {
+	var jo = document.createElement('script');
+	jo.done = false;
+	jo.onload = function() { jo.done = true; cb(); };
+	jo.onreadystatechange = function() { if ('loaded' === jo.readyState && !jo.done) { jo.done = true; cb(); } };
+	jo.src = path;
+	document.getElementsByTagName('head')[0].appendChild(jo);
+}
+
+loadjs('http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js', function() {
+	jq_loaded = true;
+	init();
+});
+loadjs("/scripts/flickr-maps.js", function() {
+	mp_loaded = true;
+	init();
+});
+loadjs('http://www.google-analytics.com/ga.js', function() {
+	an_loaded = true;
+	init();
 });
 
-</script>
-<script type="text/javascript" src="/scripts/jquery.cookie.pack.js"></script>
-<script type="text/javascript" src="http://maps.google.com/maps?file=api&amp;v=2.x&amp;key=ABQIAAAA5iyLqLpUbk1qBe2volmsqxSGaeOUwwPiRwprcQIp1asxXaPRShRiXXnXJ0iaG0Cp007xopXguZyRPQ"></script>
-<script type="text/javascript" src="/scripts/flickr-maps.js"></script>
-<script type="text/javascript">
-var flickr_photoset_ids = [];
-
-while ( /^(\d+),?(.*)$/.exec(fsetids)) {
-  var id = RegExp.$1;
-  fsetids = RegExp.$2;
-  flickr_photoset_ids.push(id);
-}
-
-gmap = new GMap2($('#map').get(0));
-gmap.setUIToDefault();
-gmap.disableDoubleClickZoom();
-
-mod_ctl.getModCtl('common').init();
-
-showpanel_ctl.init();
-showpanel_ctl.setAutoResize(true);
-
-var show_ctl = mod_ctl.switchTo('show');
-for (var i=0,n=flickr_photoset_ids.length; i<n; ++i) {
-  show_ctl.loadPhotoSet(flickr_photoset_ids[i]);
-}
-</script>
-<script type="text/javascript" src="http://www.google-analytics.com/ga.js"></script>
-<script type="text/javascript">
-if( typeof _gat !== 'undefined')
-  _gat._getTracker("UA-359113-8")._trackPageview();
 </script>
 </body>
 </html>

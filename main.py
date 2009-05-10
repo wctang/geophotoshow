@@ -5,7 +5,8 @@ import cgi
 import hashlib
 import urllib
 import re
-from xml.dom import minidom 
+from xml.dom import minidom
+
 
 from google.appengine.api import memcache
 from google.appengine.api.urlfetch import fetch
@@ -70,11 +71,11 @@ class Flickr(object):
 
     if not data['stat'] == 'ok':
       raise FlickrError, "ERROR [%s]: %s" % (data['code'], data['message'])
-		
+
     self.auth_token = str(data['auth']['token']['_content'])
     self.user = data['auth']['user']
     return True
-		
+
   def auth_logout(self):
     self.auth_token = None
     self.user = None
@@ -137,11 +138,13 @@ class FlickrHandler(webapp.RequestHandler):
   def post(self, action):
     if action == 'signcall':
       if 'flickr' in self.session:
+#        req = json.read('{"%s"}'%self.request.body.replace('=','":"').replace('&','","'))
         req = json.read(self.request.body)
         # TODO check req...
         flickr = self.session['flickr']
         url = flickr.signurl(req, True)
         logging.debug(url)
+#        self.response.out.write('%s("%s")'%(req['jsoncallback'],url))
         self.response.out.write(url)
 
 class GpxUploadHandler(webapp.RequestHandler):
@@ -234,7 +237,7 @@ class FlickrPhotoSetHandler(webapp.RequestHandler):
 
     p = re.compile('/')
     params = p.sub( ',', params)
-    
+
     val = {'API_KEY':Flickr.API_KEY, 'fsetids':params}
     path = os.path.join(os.path.dirname(__file__), 'show.html')
     self.response.headers.add_header("Expires", "Tue, 01 Jan 1980 1:00:00 GMT")

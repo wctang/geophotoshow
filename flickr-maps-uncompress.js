@@ -4,7 +4,7 @@
 // Global object: gmap, sett
 //
 
-if (typeof loadFirebugConsole !== 'undefined') loadFirebugConsole();
+//if (typeof loadFirebugConsole !== 'undefined') loadFirebugConsole();
 //if (typeof console === 'undefined') {
 //  var console = { log: function(){} };
 //}
@@ -227,11 +227,17 @@ var flickr = {
 		findByLatLon: function(opts, cb) {
 			return flickr._callApi('flickr.places.findByLatLon', opts, cb);
 		},
+		getInfo: function(opts, cb) {
+			return flickr._callApi('flickr.places.getInfo', opts, cb);
+		},
 		resolvePlaceId: function(opts, cb) {
 			return flickr._callApi('flickr.places.resolvePlaceId', opts, cb);
 		},
 		resolvePlaceURL: function(opts, cb) {
 			return flickr._callApi('flickr.places.resolvePlaceURL', opts, cb);
+		},
+		tagsForPlace: function(opts, cb) {
+			return flickr._callApi('flickr.places.tagsForPlace', opts, cb);
 		}
 	},
 	tags: {
@@ -262,19 +268,6 @@ settings_ctl = {
 		$.each(sett, function(k,v) {
 			settings_ctl[k] = v;
 		});
-	},
-
-	_save_cookie_pos: function() {
-		$.cookie('currpos', gmap.getCenter().toUrlValue()+','+gmap.getZoom(), {path:'/', expires:365});
-	},
-	_load_cookie_pos: function() {
-		var geostr = $.cookie('currpos');
-		if (!geostr)
-			return false;
-
-		var pos = geostr.split(',');
-		gmap.setCenter(new GLatLng(parseFloat(pos[0]),parseFloat(pos[1])), parseInt(pos[2],10));
-		return true;
 	},
 
 	_save: function() {
@@ -318,14 +311,13 @@ showpanel_ctl = {
   showPhoto: function(p) {
     $('#showpanel_switch_photo').click();
     var $sp = $('#showpanel');
-    $sp.find('.photo').attr('src','/images/transparent.png');
-    $sp
-      .find('.title').attr('href',p.getPageUrl()).text(p.getTitle()).end()
-      .find('.buddyurl').attr('href',p.getOwnerUrl()).end()
-      .find('.buddy').attr('src',p.getBuddyiconUrl()).end()
-      .find('.owner').attr('href',p.getOwnerUrl()).text(p.getOwnerName()).end()
-      .find('.uploaddate').attr('href',p.getUploadDateUrl()).text(p.getUploadDateStr()).end()
-      .find('.takendate').attr('href',p.getTakenDateUrl()).text(p.getTakenDateStr());
+    $sp.find('.photo').attr('src','/images/transparent.png').end()
+       .find('.title').attr('href',p.getPageUrl()).text(p.getTitle()).end()
+       .find('.buddyurl').attr('href',p.getOwnerUrl()).end()
+       .find('.buddy').attr('src',p.getBuddyiconUrl()).end()
+       .find('.owner').attr('href',p.getOwnerUrl()).text(p.getOwnerName()).end()
+       .find('.uploaddate').attr('href',p.getUploadDateUrl()).text(p.getUploadDateStr()).end()
+       .find('.takendate').attr('href',p.getTakenDateUrl()).text(p.getTakenDateStr());
 
     $('#showpanel_content').get(0).scrollTop = 0;
 
@@ -617,12 +609,7 @@ var common_ctl = {
         ps += '<div class="havpos"><img class="pos" src="/images/transparent.png"/></div>';
       }
 
-      if (show_type == 0) { // icon
-        s += '<div class="item_icon">';
-        s += ps;
-        s += '<div class="icon"><a target="_blank" href="'+p.getPageUrl()+'"><img class="f_icon" src="'+p.getIconUrl()+'" title="'+p.getTitle()+'"/></a></div>';
-        s += '</div>';
-      } else if (show_type == 1) { // thumb
+      if (show_type === 'detail') { // detail
         s += '<div class="item_detail">';
         s += ps;
         s += '<div class="thumb"><a target="_blank" href="'+p.getPageUrl()+'"><img class="f_thumb" src="'+p.getThumbUrl()+'" title="'+p.getTitle()+'"/></a></div>';
@@ -636,10 +623,15 @@ var common_ctl = {
         s += '<span>Posted on <a href="'+p.getUploadDateUrl()+'" target="_blank">'+p.getUploadDateStr()+'</a></span>';
         s += '</div><div style="clear:both;"></div>';
         s += '</div>';
-      } else if (show_type == 2) { // detail
+      } else if (show_type === 'thumb') { // thumb
         s += '<div class="item_thumb">';
         s += ps;
         s += '<div class="thumb"><a target="_blank" href="'+p.getPageUrl()+'"><img class="f_thumb" src="'+p.getThumbUrl()+'" title="'+p.getTitle()+'"/></a></div>';
+        s += '</div>';
+      } else { // icon
+        s += '<div class="item_icon">';
+        s += ps;
+        s += '<div class="icon"><a target="_blank" href="'+p.getPageUrl()+'"><img class="f_icon" src="'+p.getIconUrl()+'" title="'+p.getTitle()+'"/></a></div>';
         s += '</div>';
       }
 
@@ -725,9 +717,7 @@ var browse_ctl = {
     function refresh() {
       try {
         settings_ctl._save();
-        ui_ctl.hideShowPanel();
-        browse_ctl.page = 1;
-        browse_ctl.refreshPhotoGroup(true);
+        browse_ctl.refreshPhotoGroup({page:1, no_delay:true, updatepos:true});
       } finally {
         return false;
       }
@@ -751,25 +741,19 @@ var browse_ctl = {
       switch (clickon) {
         case 'SPAN:pager_prev': {
           if (browse_ctl.page - 1 > 0) {
-            --browse_ctl.page;
-            ui_ctl.hideShowPanel();
-            browse_ctl.refreshPhotoGroup(true);
+            browse_ctl.refreshPhotoGroup({page:browse_ctl.page-1, no_delay:true});
           }
           break;
         }
         case 'SPAN:pager_num': {
           var page = parseInt($(e.target).text(),10);
           if (page === browse_ctl.page) break;
-          browse_ctl.page = page;
-          ui_ctl.hideShowPanel();
-          browse_ctl.refreshPhotoGroup(true);
+          browse_ctl.refreshPhotoGroup({page:page, no_delay:true});
           break;
         }
         case 'SPAN:pager_next': {
           if (browse_ctl.page + 1 <= browse_ctl.pages) {
-            ++browse_ctl.page;
-            ui_ctl.hideShowPanel();
-            browse_ctl.refreshPhotoGroup(true);
+            browse_ctl.refreshPhotoGroup({page:browse_ctl.page+1, no_delay:true});
           }
           break;
         }
@@ -777,18 +761,14 @@ var browse_ctl = {
           $('#browse_perpage').find('span').each(function(i) { this.className = 'perpage_num'; });
           e.target.className = 'perpage_curr';
           settings_ctl._save();
-          ui_ctl.hideShowPanel();
-          browse_ctl.page = 1;
-          browse_ctl.refreshPhotoGroup(true);
+          browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
           break;
         }
         case 'SPAN:sortby_type': {
           $('#browse_sortby').find('span').each(function(i) { this.className = 'sortby_type'; });
           e.target.className = 'sortby_curr';
           settings_ctl._save();
-          ui_ctl.hideShowPanel();
-          browse_ctl.page = 1;
-          browse_ctl.refreshPhotoGroup(true);
+          browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
           break;
         }
         case 'SPAN:viewas_type': {
@@ -797,6 +777,17 @@ var browse_ctl = {
           settings_ctl._save();
           if (!browse_ctl.curr_photo_list) return;
           browse_ctl.fillPhotoList();
+          break;
+        }
+	case 'SPAN:tag': {
+          $('#browse_taglist').find('span').each(function(i) { this.className = 'tag'; });
+          e.target.className = 'tag_curr';
+          browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
+	  break;
+        }
+	case 'SPAN:taglist_clear': {
+          $('#browse_taglist').find('span').each(function(i) { this.className = 'tag'; });
+          browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
           break;
         }
 
@@ -841,13 +832,7 @@ var browse_ctl = {
     return true;
   },
   fillPhotoList: function() {
-    if (settings_ctl.browse_viewas === 'detail') {
-      var innerpanel = common_ctl.formatPhotoList(browse_ctl.curr_photo_list, 1, true);
-    } else if (settings_ctl.browse_viewas === 'thumb') {
-      var innerpanel = common_ctl.formatPhotoList(browse_ctl.curr_photo_list, 2);
-    } else {
-      var innerpanel = common_ctl.formatPhotoList(browse_ctl.curr_photo_list, 0);
-    }
+    var innerpanel = common_ctl.formatPhotoList(browse_ctl.curr_photo_list, settings_ctl.browse_viewas, true);
     $("#browse_photolist").empty().append(innerpanel).get(0).scrollTop = 0;
   },
   onGroupMarkerClick: function() {
@@ -865,11 +850,12 @@ var browse_ctl = {
     this.__markers = [];
   },
   refreshPhotoGroupCallback: function(rsp, params, api) {
+    if (browse_ctl.__timestamp !== params.__timestamp) {
+      return;
+    }
+
     try {
       if (!rsp) return;
-      if (browse_ctl.__timestamp !== params.__timestamp) {
-        return;
-      }
 
       browse_ctl.page = api.getPage(rsp);
       browse_ctl.pages = api.getPages(rsp);
@@ -891,14 +877,21 @@ var browse_ctl = {
       ui_ctl.endLoading();
     }
   },
-  refreshPhotoGroup: function(no_delay, timestamp) {
-    if (!browse_ctl.auto_refresh && !no_delay) return;
+  refreshPhotoGroup: function(actopt, timestamp) {
+    if (!browse_ctl.auto_refresh && !actopt.no_delay) return;
     if (!timestamp) timestamp = browse_ctl.__timestamp = +new Date;
     if (browse_ctl.__timestamp !== timestamp) return;
 
-    if (!no_delay) {
-      setTimeout( function() { browse_ctl.refreshPhotoGroup(true, timestamp); }, 2000);
+    ui_ctl.hideShowPanel();
+
+    if (!actopt.no_delay) {
+      actopt.no_delay = true;
+      setTimeout( function() { browse_ctl.refreshPhotoGroup(actopt, timestamp); }, 2000);
       return;
+    }
+
+    if (actopt.page) {
+      browse_ctl.page = actopt.page;
     }
 
     var pos = gmap.getCenter();
@@ -908,8 +901,65 @@ var browse_ctl = {
     if (acc < 1) acc = 1;
     if (acc > 16) acc = 16;
 
+    if (actopt.updatepos) {
+      $('#plac').empty();
+      $('#browse_taglist').empty();
+
+      flickr.places.findByLatLon({lat:pos.lat(), lon:pos.lng(), accuracy:acc}, function(rsp, params, api) {
+        if (!rsp || !rsp.places || !rsp.places.place || rsp.places.place.length == 0) return;
+	$('<a target="_blank" href="http://www.flickr.com/places'+rsp.places.place[0].place_url+'">'+rsp.places.place[0].name+'</a>').appendTo('#plac');
+
+        flickr.places.tagsForPlace({place_id:rsp.places.place[0].place_id}, function(rsp, params, api) {
+		if (!rsp || !rsp.tags || !rsp.tags.tag) return;
+
+		var ccc = '<div>';
+		$.each(rsp.tags.tag, function(k, v) {
+			ccc += '<span class="tag">'+v._content+'</span> ';
+		});
+		ccc += '</div>';
+		$('#browse_taglist').append(ccc);
+	});
+
+//        flickr.places.getInfo({place_id:rsp.places.place[0].place_id}, function(rsp, params, api) {
+//          if (!rsp || !rsp.place) return;
+//
+//          var ou = '';
+//          $.each(['country', 'region', 'county', 'locality'], function(i,loc) {
+//            if (rsp.place[loc]) {
+//              ou += '<a target="_blank" href="http://www.flickr.com/places'+rsp.place[loc].place_url+'">'+rsp.place[loc]._content+'</a> ';
+//            }
+//          });
+//          $pl.html(ou);
+//
+//          if (!rsp.place.shapedata || !rsp.place.shapedata.polylines || !rsp.place.shapedata.polylines.polyline) return;
+//
+//          $pl.get(0).poly = [];
+//          $.each(rsp.place.shapedata.polylines.polyline, function(k, v) {
+//            var pp = [];
+//            $.each(v._content.split(' '), function(k2,v2) {
+//              pp.push(GLatLng.fromUrlValue(v2));
+//            });
+//            var ppp = new GPolygon(pp);
+//            gmap.addOverlay(ppp);
+//            $pl.get(0).poly.push(ppp);
+//          });
+//        });
+      });
+    }
+
+
     var bbox = common_ctl.getRefreshRange();
     var opts = {min_taken_date:'1800-01-01', bbox:bbox, accuracy:acc, page:browse_ctl.page, __timestamp:browse_ctl.__timestamp};
+
+    var query = $.trim($('#browse_query').children(':text').val());
+    if (query !== '') {
+      opts.text = query;
+    }
+
+    var $tag_curr = $('#browse_taglist').find('.tag_curr');
+    if ($tag_curr.size() > 0) {
+      opts.tags = $tag_curr.text();
+    }
 
     opts.per_page = settings_ctl.browse_perpage;
 
@@ -920,47 +970,30 @@ var browse_ctl = {
     }
 
     var browse_type = $('#browse_type').val();
-    if (browse_type === 'all') {
-    } else if (browse_type === 'user' && user) {
+    if (browse_type === 'user' && user) {
       opts.user_id = user.nsid;
     } else if (/^\d+@N\d+$/.exec(browse_type)) {
       opts.user_id = browse_type;
     }
 
-    var query = $.trim($('#browse_query').children(':text').val());
-    if (query !== '') {
-      opts.text = query;
-    }
-
     ui_ctl.beginLoading();
     flickr.photos.search(opts, this.refreshPhotoGroupCallback, !!user);
-
+/*
     var $pl = $('#place_link');
     if (!$pl.get(0).pos || browse_ctl.isNeedRefresh($pl.get(0).pos)) {
       $pl.get(0).pos = pos;
-      $pl.empty();
-      flickr.places.findByLatLon({lat:pos.lat(), lon:pos.lng(), accuracy:acc}, function(rsp, params, api) {
-        if (!rsp || !rsp.places || !rsp.places.place) return;
-
-        flickr.places.resolvePlaceId({place_id:rsp.places.place[0].place_id}, function(rsp, params, api) {
-        //flickr.places.resolvePlaceURL({url:rsp.places.place[0].place_url}, function(rsp, params, api) {
-          if (!rsp || !rsp.location) return;
-
-          var ou = '';
-          $.each(['country', 'region', 'county', 'locality'], function(i,loc) {
-            if (rsp.location[loc]) {
-              ou += '<a target="_blank" href="http://www.flickr.com/places'+rsp.location[loc].place_url+'">'+rsp.location[loc]._content+'</a> ';
-            }
-          });
-
-          $pl.html(ou);
+      if ($pl.get(0).poly) {
+        $.each($pl.get(0).poly, function(k, v) {
+          gmap.removeOverlay(v);
         });
-      });
-    }
+        $pl.get(0).poly = null;
+      }
+      $pl.empty();
+*/
   },
+
   onRefreshClick: function() {
-    browse_ctl.page = 1;
-    browse_ctl.refreshPhotoGroup(true);
+    browse_ctl.refreshPhotoGroup({page:1, no_delay:true, updatepos:true});
   },
   refreshLinks:function(is_reset) {
     $('.popup_panel').hide();
@@ -973,31 +1006,28 @@ var browse_ctl = {
     $('#links_currentmap').attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page).show();
   },
   onMapDragend: function() {
-    settings_ctl._save_cookie_pos();
+    ui_ctl.savePosition();
 
     browse_ctl.refreshLinks();
     if (!browse_ctl.isNeedRefresh()) return;
-    $('#place_link').empty().get(0).pos = null;
     if (settings_ctl.refresh !== 'auto') return;
 
-    browse_ctl.page = 1;
-    browse_ctl.refreshPhotoGroup();
+    browse_ctl.refreshPhotoGroup({page:1, updatepos:true});
   },
   onMapZoomend: function() {
-    settings_ctl._save_cookie_pos();
+    ui_ctl.savePosition();
 
     browse_ctl.refreshLinks();
-    $('#place_link').empty().get(0).pos = null;
     if (settings_ctl.refresh !== 'auto') return;
 
-    browse_ctl.page = 1;
-    browse_ctl.refreshPhotoGroup();
+    browse_ctl.refreshPhotoGroup({page:1, updatepos:true});
   },
   onActive: function() {
     this._center = this.__timestamp = null;
     ui_ctl.onActive('browse');
     browse_ctl.refreshLinks();
-    this.refreshPhotoGroup(true);
+
+    this.refreshPhotoGroup({no_delay:true, updatepos:true});
     settings_ctl._save();
   },
   onDeActive: function() {
@@ -1251,13 +1281,7 @@ var geotag_ctl = {
     return new GMarker(new GLatLng(photo.lat, photo.lng), {icon:icon});
   },
   fillPhotoList: function() {
-    if (settings_ctl.geotag_viewas === 'detail') {
-      var innerpanel = common_ctl.formatPhotoList(geotag_ctl.curr_photo_list, 1, false, true, true, geotag_ctl.selected);
-    } else if (settings_ctl.geotag_viewas === 'thumb') {
-      var innerpanel = common_ctl.formatPhotoList(geotag_ctl.curr_photo_list, 2, false, true, true, geotag_ctl.selected);
-    } else {
-      var innerpanel = common_ctl.formatPhotoList(geotag_ctl.curr_photo_list, 0, false, true, true, geotag_ctl.selected);
-    }
+    var innerpanel = common_ctl.formatPhotoList(geotag_ctl.curr_photo_list, settings_ctl.geotag_viewas, false, true, true, geotag_ctl.selected);
     $("#geotag_photolist").empty().append(innerpanel).get(0).scrollTop = 0;
   },
   onRefreshPhotoList: function(rsp, params, api) {
@@ -1337,10 +1361,10 @@ var geotag_ctl = {
     }
   },
   onMapDragend: function() {
-    settings_ctl._save_cookie_pos();
+    ui_ctl.savePosition();
   },
   onMapZoomend: function() {
-    settings_ctl._save_cookie_pos();
+    ui_ctl.savePosition();
   },
   onActive: function() {
     geotag_ctl.showCurrMarker();
@@ -1491,13 +1515,7 @@ var phoset_ctl = {
   },
 
   fillPhotoList: function() {
-    if (settings_ctl.phoset_viewas === 'detail') {
-      var innerpanel = common_ctl.formatPhotoList(phoset_ctl.curr_photo_list, 1, false);
-    } else if (settings_ctl.phoset_viewas === 'thumb') {
-      var innerpanel = common_ctl.formatPhotoList(phoset_ctl.curr_photo_list, 2);
-    } else {
-      var innerpanel = common_ctl.formatPhotoList(phoset_ctl.curr_photo_list, 0);
-    }
+    var innerpanel = common_ctl.formatPhotoList(phoset_ctl.curr_photo_list, settings_ctl.phoset_viewas, false);
     $("#phoset_photolist").empty().append(innerpanel).get(0).scrollTop = 0;
   },
 
@@ -1703,7 +1721,7 @@ var show_ctl = {
   },
 
   fillPhotoList: function() {
-    var innerpanel = common_ctl.formatPhotoList(show_ctl.curr_photo_list, 2);
+    var innerpanel = common_ctl.formatPhotoList(show_ctl.curr_photo_list, 'thumb');
     $("#show_photolist").empty().append(innerpanel).get(0).scrollTop = 0;
   },
 
