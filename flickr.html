@@ -8,7 +8,7 @@
 
 body { margin:0; overflow:hidden; color:black; font-family:Arial,sans-serif; }
 img { border:0; }
-*:focus { outline:none } 
+*:focus { outline:none }
 
 img.f_icon        { width:75px; height:75px; margin:2px; }
 img.f_icon:hover  { margin:0; border:2px solid yellow; }
@@ -65,7 +65,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 .tab { position:absolute; top:6px; left:6px; bottom:6px; right:6px; overflow:hidden; display:none; }
 .tab .tabrow { height: 2em; line-height: 2em; }
 
-.pager_prev, 
+.pager_prev,
 .pager_next { margin-right:3px; padding:3px 3px; color:#808185; cursor:pointer; }
 .pager_dots { margin-right:3px;                  color:#808185; }
 .pager_num,
@@ -409,7 +409,7 @@ var ui_ctl = {
     this._hideFocus();
     this._hideRange();
   },
-  
+
   updateSettings: function(sett) {
     sett.refresh = (this.isAutoRefresh() ? 'auto' : 'manual');
     sett.browse_perpage = $('#browse_perpage').find('.perpage_curr').text();
@@ -450,7 +450,7 @@ var ui_ctl = {
     }
   },
 
-  isAutoRefresh: function() { 
+  isAutoRefresh: function() {
     if (!this.$refresh_div) return;
     return this.$refresh_div.find('#sel_auto').hasClass('selected');
   },
@@ -478,7 +478,7 @@ var ui_ctl = {
     $('#focus').css({top:mh*2-20, left:mw*2-20});
     $('#range_lt').css({top:mh, left:mw});
     $('#range_rb').css({top:mh*3, left:mw*3});
-    
+
     $('#place_link').css({width:mh*2});
   },
 
@@ -496,7 +496,7 @@ var ui_ctl = {
   hideSaving: function() {
     $('#saving').hide();
   },
-            
+
   expendPanel: function() {
     panelexp = true;
     $('#panel').animate({right:0}, 'fast', ui_ctl.onResize);
@@ -546,7 +546,7 @@ var ui_ctl = {
         break;
     }
   },
-            
+
   on_message: function(str) {
     $('#saving').text(str).show();
     setTimeout(function() { $('#saving').fadeOut('slow'); }, 2000);
@@ -661,7 +661,7 @@ var sett = eval('('+str+')');
 if (/^#ll=([\-\d\,\.]+)&z=(\d+)(.*)$/.exec(location.hash)) {
   var params = RegExp.$3;
   gmap.setCenter(GLatLng.fromUrlValue(RegExp.$1), parseInt(RegExp.$2,10));
-  
+
   if (/mod=([a-z]+)/.exec(params)) sett.mode = RegExp.$1;
   if (/sort=([a-z]+)/.exec(params)) sett.browse_sortby = RegExp.$1;
   if (/perpage=(\d+)/.exec(params)) sett.browse_perpage = RegExp.$1;
@@ -687,7 +687,7 @@ if (user) {
 </script>
 <script type="text/javascript" src="http://www.google-analytics.com/ga.js"></script>
 <script type="text/javascript">
-if( typeof _gat !== 'undefined') 
+if( typeof _gat !== 'undefined')
   _gat._getTracker("UA-359113-8")._trackPageview();
 </script>
 </body>

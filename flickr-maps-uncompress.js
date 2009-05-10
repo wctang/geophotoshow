@@ -928,18 +928,18 @@ var browse_ctl = {
       $pl.empty();
       flickr.places.findByLatLon({lat:pos.lat(), lon:pos.lng(), accuracy:acc}, function(rsp, params, api) {
         if (!rsp || !rsp.places || !rsp.places.place) return;
-  
+
         flickr.places.resolvePlaceId({place_id:rsp.places.place[0].place_id}, function(rsp, params, api) {
         //flickr.places.resolvePlaceURL({url:rsp.places.place[0].place_url}, function(rsp, params, api) {
           if (!rsp || !rsp.location) return;
-  
+
           var ou = '';
           $.each(['country', 'region', 'county', 'locality'], function(i,loc) {
             if (rsp.location[loc]) {
               ou += '<a target="_blank" href="http://www.flickr.com/places'+rsp.location[loc].place_url+'">'+rsp.location[loc]._content+'</a> ';
             }
           });
-  
+
           $pl.html(ou);
         });
       });
