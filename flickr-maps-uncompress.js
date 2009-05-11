@@ -897,7 +897,7 @@ var browse_ctl = {
     var pos = gmap.getCenter();
     browse_ctl._center = pos;
 
-    var acc = gmap.getZoom() - 1; // include larger accuracy
+    var acc = gmap.getZoom() - 3; // include larger accuracy
     if (acc < 1) acc = 1;
     if (acc > 16) acc = 16;
 

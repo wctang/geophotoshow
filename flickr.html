@@ -49,7 +49,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 #userbar { float:right; margin-right:10px; font-size:84%; height:20px; }
 
 #header { height:40px; }
- #logo { float:left; padding:6px 10px; }
+ #logo { padding:6px 10px; }
  #logo a { text-decoration:none; }
  #title { font-size:24px; font-weight:bold; padding-left:10px; }
 
@@ -132,15 +132,14 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 <div id="userbar">
 {% if user %}
   <b>{{ user.username }}@<a href="http://www.flickr.com/"><img src="/images/icon_flickr.gif"/></a> </b>
+ | <a href="/flickr/logout">Sign out</a>
 {% else %}
   <a href="/flickr/login">Sign in <img src="/images/icon_flickr.gif"/></a>
 {% endif %}
 <!--
   | <a target="_blank" href="http://docs.google.com/View?docID=dxtw5pn_11328mg6dg9">Help</a> | <a href="http://groups.google.com/group/geophotoshow">Bug report</a>
 -->
-{% if user %}
- | <a href="/flickr/logout">Sign out</a>
-{% endif %}
+  | <a target="_blank" href="http://wiki.github.com/wctang/geophotoshow">About</a>
 </div>
 
 <div id="header">
