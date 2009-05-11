@@ -65,9 +65,11 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 .tab { position:absolute; top:6px; left:6px; bottom:6px; right:6px; overflow:hidden; display:none; }
 .tab .tabrow { line-height: 2em; }
 
+.pager_dots { margin-right:3px;                  color:#808185; }
 .pager_prev,
 .pager_next { margin-right:3px; padding:3px 3px; color:#808185; cursor:pointer; }
-.pager_dots { margin-right:3px;                  color:#808185; }
+.pager_prev:hover,
+.pager_next:hover { background-color:lightblue; }
 .pager_num,
 .perpage_num,
 .viewas_type,
@@ -79,7 +81,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 .pager_curr,
 .perpage_curr,
 .viewas_curr,
-.sortby_curr { margin-right:3px; padding:2px 4px; color:white;   border:1px solid #808185; background-color:#808185; font-weight:bold; }
+.sortby_curr { margin-right:3px; padding:2px 4px; color:white;   border:1px solid #808185; background-color:#808185; font-weight:bold; cursor:default; }
 
 .taglist { position:absolute; left:0; right:0; overflow-x:hidden; overflow-y:auto; }
 .taglist div { width:420px; font-size:100%; line-height:1.5em; }
@@ -343,229 +345,229 @@ user = { nsid:'{{ user.nsid }}' };
 {% endif %}
 
 ui_ctl = {
-  onResize: function(nopanel) {
-    var h = $(window).height();
-    var w = $(window).width();
-    var $m = $('#map');
-    var $p = $('#panel');
-    var $sp = $('#showpanel');
+	onResize: function(nopanel) {
+		var h = $(window).height();
+		var w = $(window).width();
+		var $m = $('#map');
+		var $p = $('#panel');
+		var $sp = $('#showpanel');
 
-    var mw = panelexp ? w-$p.width() : w;
-    var mh = h-$m.offset().top;
-    var ph = h-$p.offset().top;
+		var mw = panelexp ? w-$p.width() : w;
+		var mh = h-$m.offset().top;
+		var ph = h-$p.offset().top;
 
-    $('#mainbar').width(mw);
-    $m.css({height:mh, width:mw});
-    $('#tabs').height(mh);
-    $('.sdh').width(mw);
-    $('.sdv').height(mh);
-    $('.sdvr').height(mh);
-    if(nopanel) {
-      $p.css({height:ph});
-    } else {
-      var pr = panelexp ? 0 : -$p.width();
-      $p.css({height:ph, right:pr});
-    }
+		$('#mainbar').width(mw);
+		$m.css({height:mh, width:mw});
+		$('#tabs').height(mh);
+		$('.sdh').width(mw);
+		$('.sdv').height(mh);
+		$('.sdvr').height(mh);
+		if(nopanel) {
+			$p.css({height:ph});
+		} else {
+			var pr = panelexp ? 0 : -$p.width();
+			$p.css({height:ph, right:pr});
+		}
 
-    $sp.css({height:ph, width:mw});
+		$sp.css({height:ph, width:mw});
 
-    $('#panel_toggle').children('img').attr('class', (panelexp?'col':'exp'));
+		$('#panel_toggle').children('img').attr('class', (panelexp?'col':'exp'));
 
-    $('.popup_panel').hide();
-    $('.popup_panel .close').click(function(){ $(this.parentNode).hide(); });
-    $('.popup_panel input').click(function(){ this.select(); });
+		$('.popup_panel').hide();
+		$('.popup_panel .close').click(function(){ $(this.parentNode).hide(); });
+		$('.popup_panel input').click(function(){ this.select(); });
 
-    if (gmap) gmap.checkResize();
+		if (gmap) gmap.checkResize();
 
-    if (gmap) ui_ctl._onResize();
-  },
+		if (gmap) ui_ctl._onResize();
+	},
 
-  $refresh_div: null,
-  init: function() {
-    function RefreshControl() {}
-    RefreshControl.prototype = new GControl();
-    RefreshControl.prototype.initialize = function(map) {
-      ui_ctl.$refresh_div = $('#refresh_control');
-      ui_ctl.$refresh_div.click(function(e) {
-        var tagname = e.target.tagName;
-        var clsname = e.target.className;
+	$refresh_div: null,
+	init: function() {
+		function RefreshControl() {}
+		RefreshControl.prototype = new GControl();
+		RefreshControl.prototype.initialize = function(map) {
+			ui_ctl.$refresh_div = $('#refresh_control');
+			ui_ctl.$refresh_div.click(function(e) {
+				var tagname = e.target.tagName;
+				var clsname = e.target.className;
 
-        if (tagname === 'IMG' && clsname === 'refresh') {
-          if (mod_ctl.getCurrentModCtl().onRefreshClick) {
-            mod_ctl.getCurrentModCtl().onRefreshClick();
-          }
-        } else if (tagname === 'DIV' && clsname === 'selable') {
-          ui_ctl.$refresh_div.find('.selected').attr('class', 'selable');
-          $(e.target).attr('class', 'selected');
-          settings_ctl._save();
-        }
-      });
-      map.getContainer().appendChild(ui_ctl.$refresh_div.get(0));
-      return ui_ctl.$refresh_div.get(0);
-    };
-    RefreshControl.prototype.getDefaultPosition = function() {
-      return new GControlPosition(G_ANCHOR_TOP_RIGHT, new GSize(20, 50));
-    };
+				if (tagname === 'IMG' && clsname === 'refresh') {
+					if (mod_ctl.getCurrentModCtl().onRefreshClick) {
+						mod_ctl.getCurrentModCtl().onRefreshClick();
+					}
+				} else if (tagname === 'DIV' && clsname === 'selable') {
+					ui_ctl.$refresh_div.find('.selected').attr('class', 'selable');
+					$(e.target).attr('class', 'selected');
+					settings_ctl._save();
+				}
+			});
+			map.getContainer().appendChild(ui_ctl.$refresh_div.get(0));
+			return ui_ctl.$refresh_div.get(0);
+		};
+		RefreshControl.prototype.getDefaultPosition = function() {
+			return new GControlPosition(G_ANCHOR_TOP_RIGHT, new GSize(20, 50));
+		};
 
-    gmap.addControl(new RefreshControl());
+		gmap.addControl(new RefreshControl());
 
-    gmap.getContainer().appendChild($('#focus').get(0));
-    gmap.getContainer().appendChild($('#range_lt').get(0));
-    gmap.getContainer().appendChild($('#range_rb').get(0));
-    this._onResize();
-    this._hideFocus();
-    this._hideRange();
-  },
+		gmap.getContainer().appendChild($('#focus').get(0));
+		gmap.getContainer().appendChild($('#range_lt').get(0));
+		gmap.getContainer().appendChild($('#range_rb').get(0));
+		this._onResize();
+		this._hideFocus();
+		this._hideRange();
+	},
 
-  updateSettings: function(sett) {
-    sett.refresh = (this.isAutoRefresh() ? 'auto' : 'manual');
-    sett.browse_perpage = $('#browse_perpage').find('.perpage_curr').text();
-    sett.browse_viewas = $('#browse_viewas').find('.viewas_curr').attr('type');
-    sett.browse_sortby = $('#browse_sortby').find('.sortby_curr').attr('type');
-    if (user) {
-      sett.geotag_perpage = $('#geotag_perpage').find('.perpage_curr').text();
-      sett.geotag_viewas = $('#geotag_viewas').find('.viewas_curr').attr('type');
-      sett.phoset_viewas = $('#phoset_viewas').find('.viewas_curr').attr('type');
-    }
-  },
-  setSettings: function(sett) {
-    if (this.$refresh_div) {
-      if (sett.refresh === 'auto') {
-        this.$refresh_div.find('#sel_auto').attr('class', 'selected');
-        this.$refresh_div.find('#sel_manual').attr('class', 'selable');
-      } else {
-        this.$refresh_div.find('#sel_auto').attr('class', 'selable');
-        this.$refresh_div.find('#sel_manual').attr('class', 'selected');
-      }
-    }
+	updateSettings: function(sett) {
+		sett.refresh = (this.isAutoRefresh() ? 'auto' : 'manual');
+		sett.browse_perpage = $('#browse_perpage').find('.perpage_curr').text();
+		sett.browse_viewas = $('#browse_viewas').find('.viewas_curr').attr('type');
+		sett.browse_sortby = $('#browse_sortby').find('.sortby_curr').attr('type');
+		if (user) {
+			sett.geotag_perpage = $('#geotag_perpage').find('.perpage_curr').text();
+			sett.geotag_viewas = $('#geotag_viewas').find('.viewas_curr').attr('type');
+			sett.phoset_viewas = $('#phoset_viewas').find('.viewas_curr').attr('type');
+		}
+	},
+	setSettings: function(sett) {
+		if (this.$refresh_div) {
+			if (sett.refresh === 'auto') {
+				this.$refresh_div.find('#sel_auto').attr('class', 'selected');
+				this.$refresh_div.find('#sel_manual').attr('class', 'selable');
+			} else {
+				this.$refresh_div.find('#sel_auto').attr('class', 'selable');
+				this.$refresh_div.find('#sel_manual').attr('class', 'selected');
+			}
+		}
 
-    $('#browse_perpage').find('span').each(function(i) { this.className = 'perpage_num'; });
-    $('#browse_perpage_'+sett.browse_perpage).get(0).className = 'perpage_curr';
-    $('#browse_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
-    $('#browse_viewas_'+sett.browse_viewas).get(0).className = 'viewas_curr';
-    $('#browse_sortby').find('span').each(function(i) { this.className = 'sortby_type'; });
-    $('#browse_sortby_'+sett.browse_sortby).get(0).className = 'sortby_curr';
+		$('#browse_perpage').find('span').each(function(i) { this.className = 'perpage_num'; });
+		$('#browse_perpage_'+sett.browse_perpage).get(0).className = 'perpage_curr';
+		$('#browse_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
+		$('#browse_viewas_'+sett.browse_viewas).get(0).className = 'viewas_curr';
+		$('#browse_sortby').find('span').each(function(i) { this.className = 'sortby_type'; });
+		$('#browse_sortby_'+sett.browse_sortby).get(0).className = 'sortby_curr';
 
-    if (user) {
-      $('#geotag_perpage').find('span').each(function(i) { this.className = 'perpage_num'; });
-      $('#geotag_perpage_'+sett.geotag_perpage).get(0).className = 'perpage_curr';
-      $('#geotag_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
-      $('#geotag_viewas_'+sett.geotag_viewas).get(0).className = 'viewas_curr';
+		if (user) {
+			$('#geotag_perpage').find('span').each(function(i) { this.className = 'perpage_num'; });
+			$('#geotag_perpage_'+sett.geotag_perpage).get(0).className = 'perpage_curr';
+			$('#geotag_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
+			$('#geotag_viewas_'+sett.geotag_viewas).get(0).className = 'viewas_curr';
 
-      $('#phoset_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
-      $('#phoset_viewas_'+sett.phoset_viewas).get(0).className = 'viewas_curr';
-    }
-  },
+			$('#phoset_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
+			$('#phoset_viewas_'+sett.phoset_viewas).get(0).className = 'viewas_curr';
+		}
+	},
 
-  isAutoRefresh: function() {
-    if (!this.$refresh_div) return;
-    return this.$refresh_div.find('#sel_auto').hasClass('selected');
-  },
+	isAutoRefresh: function() {
+		if (!this.$refresh_div) return;
+		return this.$refresh_div.find('#sel_auto').hasClass('selected');
+	},
 
 
 
-  _showRefreshControl: function() {
-    if (!this.$refresh_div) return;
-    this.$refresh_div.show();
-  },
-  _hideRefreshControl: function() {
-    if (!this.$refresh_div) return;
-    this.$refresh_div.hide();
-  },
-  _showFocus: function() { $('#focus').show(); },
-  _hideFocus: function() { $('#focus').hide(); },
-  _showRange: function() { $('#range_lt, #range_rb').show(); },
-  _hideRange: function() { $('#range_lt, #range_rb').hide(); },
+	_showRefreshControl: function() {
+		if (!this.$refresh_div) return;
+		this.$refresh_div.show();
+	},
+	_hideRefreshControl: function() {
+		if (!this.$refresh_div) return;
+		this.$refresh_div.hide();
+	},
+	_showFocus: function() { $('#focus').show(); },
+	_hideFocus: function() { $('#focus').hide(); },
+	_showRange: function() { $('#range_lt, #range_rb').show(); },
+	_hideRange: function() { $('#range_lt, #range_rb').hide(); },
 
-  _onResize: function() {
-    var $m = $('#map');
-    var mw = parseInt($m.width()/4);
-    var mh = parseInt($m.height()/4);
+	_onResize: function() {
+		var $m = $('#map');
+		var mw = parseInt($m.width()/4);
+		var mh = parseInt($m.height()/4);
 
-    $('#focus').css({top:mh*2-20, left:mw*2-20});
-    $('#range_lt').css({top:mh, left:mw});
-    $('#range_rb').css({top:mh*3, left:mw*3});
-  },
+		$('#focus').css({top:mh*2-20, left:mw*2-20});
+		$('#range_lt').css({top:mh, left:mw});
+		$('#range_rb').css({top:mh*3, left:mw*3});
+	},
 
-  beginLoading: function() {
-    $('#loading').show();
-  },
+	beginLoading: function() {
+		$('#loading').show();
+	},
 
-  endLoading: function() {
-    $('#loading').hide();
-  },
+	endLoading: function() {
+		$('#loading').hide();
+	},
 
-  showSaving: function(str) {
-    $('#saving').text(str).show();
-  },
-  hideSaving: function() {
-    $('#saving').hide();
-  },
+	showSaving: function(str) {
+		$('#saving').text(str).show();
+	},
+	hideSaving: function() {
+		$('#saving').hide();
+	},
 
-  expendPanel: function() {
-    panelexp = true;
-    $('#panel').animate({right:0}, 'fast', ui_ctl.onResize);
-  },
-  closePanel: function() {
-    panelexp = false;
-    ui_ctl.onResize(true);
-    $p = $('#panel');
-    $p.animate({right:-$p.width()}, 'fast');
-  },
+	expendPanel: function() {
+		panelexp = true;
+		$('#panel').animate({right:0}, 'fast', ui_ctl.onResize);
+	},
+	closePanel: function() {
+		panelexp = false;
+		ui_ctl.onResize(true);
+		$p = $('#panel');
+		$p.animate({right:-$p.width()}, 'fast');
+	},
 
-  showShowPanel: function() {
-    showpanelexp = true;
-    $('#showpanel').fadeIn('fast');
-    if (gmap) gmap.disableScrollWheelZoom();
-  },
-  hideShowPanel: function() {
-    showpanelexp = false;
-    $('#showpanel').fadeOut('fast');
-    if (gmap) gmap.enableScrollWheelZoom();
-  },
+	showShowPanel: function() {
+		showpanelexp = true;
+		$('#showpanel').fadeIn('fast');
+		if (gmap) gmap.disableScrollWheelZoom();
+	},
+	hideShowPanel: function() {
+		showpanelexp = false;
+		$('#showpanel').fadeOut('fast');
+		if (gmap) gmap.enableScrollWheelZoom();
+	},
 
 	savePosition: function() {
 		$.cookie('currpos', gmap.getCenter().toUrlValue()+','+gmap.getZoom(), {path:'/', expires:365});
 	},
 
-  onActive: function(mod) {
-    switch(mod) {
-      case 'browse':
-        this._showFocus();
-        this._showRange();
-        this._showRefreshControl();
-        break;
-      case 'geotag':
-        this._showFocus();
-        break;
-      case 'phoset':
-        break;
-    }
-  },
+	onActive: function(mod) {
+		switch(mod) {
+			case 'browse':
+			this._showFocus();
+			this._showRange();
+			this._showRefreshControl();
+			break;
+			case 'geotag':
+			this._showFocus();
+			break;
+			case 'phoset':
+			break;
+		}
+	},
 
-  onDeActive: function(mod) {
-    switch(mod) {
-      case 'browse':
-        this._hideFocus();
-        this._hideRange();
-        this._hideRefreshControl();
-        break;
-      case 'geotag':
-        this._hideFocus();
-        break;
-      case 'phoset':
-        break;
-    }
-  },
+	onDeActive: function(mod) {
+		switch(mod) {
+			case 'browse':
+			this._hideFocus();
+			this._hideRange();
+			this._hideRefreshControl();
+			break;
+			case 'geotag':
+			this._hideFocus();
+			break;
+			case 'phoset':
+			break;
+		}
+	},
 
-  on_message: function(str) {
-    $('#saving').text(str).show();
-    setTimeout(function() { $('#saving').fadeOut('slow'); }, 2000);
-  },
-  on_error: function(str) {
-    $('#error').text(str).show();
-    setTimeout(function() { $('#error').fadeOut('slow'); }, 2000);
-  }
+	on_message: function(str) {
+		$('#saving').text(str).show();
+		setTimeout(function() { $('#saving').fadeOut('slow'); }, 2000);
+	},
+	on_error: function(str) {
+		$('#error').text(str).show();
+		setTimeout(function() { $('#error').fadeOut('slow'); }, 2000);
+	}
 };
 </script>
 

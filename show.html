@@ -186,80 +186,80 @@ var fsetids = '{{ fsetids }}';
 var gpxids = '{{ gpxids }}';
 
 ui_ctl = {
-  onResize: function(nopanel) {
-    var h = $(window).height();
-    var w = $(window).width();
-    var $m = $('#map');
-    var $p = $('#panel');
-    var $sp = $('#showpanel');
+	onResize: function(nopanel) {
+		var h = $(window).height();
+		var w = $(window).width();
+		var $m = $('#map');
+		var $p = $('#panel');
+		var $sp = $('#showpanel');
 
-    var mw = panelexp ? w-$p.width() : w;
-    var mh = h-$m.offset().top;
-    var ph = h-$p.offset().top;
+		var mw = panelexp ? w-$p.width() : w;
+		var mh = h-$m.offset().top;
+		var ph = h-$p.offset().top;
 
-    $m.css({height:mh, width:mw});
-    $('#mainbar').width(mw);
-    $('#tabs').height(ph);
-    $('.sdh').width(mw);
-    $('.sdv').height(mh);
-    $('.sdvr').height(mh);
-    if(nopanel) {
-      $p.css({height:ph});
-    } else {
-      var pr = panelexp ? 0 : -$p.width();
-      $p.css({height:ph, right:pr});
-    }
+		$m.css({height:mh, width:mw});
+		$('#mainbar').width(mw);
+		$('#tabs').height(ph);
+		$('.sdh').width(mw);
+		$('.sdv').height(mh);
+		$('.sdvr').height(mh);
+		if(nopanel) {
+			$p.css({height:ph});
+		} else {
+			var pr = panelexp ? 0 : -$p.width();
+			$p.css({height:ph, right:pr});
+		}
 
-    $sp.css({height:ph, width:mw});
+		$sp.css({height:ph, width:mw});
 
-    $('#panel_toggle').children('img').attr('class', (panelexp?'col':'exp'));
+		$('#panel_toggle').children('img').attr('class', (panelexp?'col':'exp'));
 
-    if(gmap) gmap.checkResize();
-  },
+		if(gmap) gmap.checkResize();
+	},
 
-  beginLoading: function() {
-    $('#loading').show();
-  },
-  endLoading: function() {
-    $('#loading').hide();
-  },
+	beginLoading: function() {
+		$('#loading').show();
+	},
+	endLoading: function() {
+		$('#loading').hide();
+	},
 
-  showSaving: function(str) {},
-  hideSaving: function() {},
+	showSaving: function(str) {},
+	hideSaving: function() {},
 
-  expendPanel: function() {
-    panelexp = true;
-    $('#panel').animate({right:0}, 'fast', ui_ctl.onResize);
-  },
-  closePanel: function() {
-    panelexp = false;
-    ui_ctl.onResize(true);
-    $p = $('#panel');
-    $p.animate({right:-$p.width()}, 'fast');
-  },
+	expendPanel: function() {
+		panelexp = true;
+		$('#panel').animate({right:0}, 'fast', ui_ctl.onResize);
+	},
+	closePanel: function() {
+		panelexp = false;
+		ui_ctl.onResize(true);
+		$p = $('#panel');
+		$p.animate({right:-$p.width()}, 'fast');
+	},
 
-  showShowPanel: function() {
-    showpanelexp = true;
-    $('#showpanel').fadeIn('fast');
-    if (gmap) gmap.disableScrollWheelZoom();
-  },
-  hideShowPanel: function() {
-    showpanelexp = false;
-    $('#showpanel').fadeOut('fast');
-    if (gmap) gmap.enableScrollWheelZoom();
-  },
+	showShowPanel: function() {
+		showpanelexp = true;
+		$('#showpanel').fadeIn('fast');
+		if (gmap) gmap.disableScrollWheelZoom();
+	},
+	hideShowPanel: function() {
+		showpanelexp = false;
+		$('#showpanel').fadeOut('fast');
+		if (gmap) gmap.enableScrollWheelZoom();
+	},
 
 	savePosition: function() {
 		$.cookie('currpos', gmap.getCenter().toUrlValue()+','+gmap.getZoom(), {path:'/', expires:365});
 	},
 
-  onActive: function(mod) {},
-  onDeActive: function(mod) {},
+	onActive: function(mod) {},
+	onDeActive: function(mod) {},
 
-  on_message: function(str) {},
-  on_error: function(str) {
-    $('#error').text(str).show();
-  }
+	on_message: function(str) {},
+	on_error: function(str) {
+		$('#error').text(str).show();
+	}
 };
 </script>
 
