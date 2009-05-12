@@ -713,6 +713,48 @@ var browse_ctl = {
 	__timestamp: null,
 	_center: null,
 
+	preinit: function() {
+		$('<a id="browse_switch" href="javascript:void(0)">Browse</a>').appendTo('.switch');
+
+		var ss = 
+		'<div id="browse_tab" class="tab">'+
+			'<div class="tabrow" style="height:2em;">'+
+				'<select id="browse_type">'+
+					'<option value="all" title="Search all photos.">All Photos</option>';
+		if (user) {
+			ss +=
+					'<option value="user" title="Only Search your photos.">Your Photos</option>'+
+					'<optgroup label="Your contacts" id="contact_optgroup"></optgroup>';
+		}
+			ss +=
+			          '</select>'+
+			'</div>'+
+			'<div class="tabrow" style="height:2em;">'+
+				'<form id="browse_query" style="margin:0; padding:0;"><input type="text" style="width:350px;"/> <input type="submit" value="Search"/></form>'+
+			'</div>'+
+			'<div class="tabrow" style="height:10em;">'+
+				'<div><span id="plac"></span><span class="taglist_clear" style="float:right;">Clear</span></div>'+
+				'<div id="browse_taglist" class="taglist" style="height:7.5em;"></div>'+
+			'</div>'+
+			'<div class="tabrow" style="height:2em;">'+
+				'<span id="browse_perpage" style="float:right;">'+
+					'<span id="browse_perpage_25" class="perpage_num">25</span><span id="browse_perpage_50" class="perpage_num">50</span><span id="browse_perpage_100" class="perpage_num">100</span><span id="browse_perpage_200" class="perpage_num">200</span>'+
+				'</span>'+
+				'<span id="browse_pager"></span>'+
+			'</div>'+
+			'<div class="tabrow" style="height:2em;">'+
+				'<span id="browse_viewas" style="float:right;">'+
+					'<span id="browse_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="browse_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="browse_viewas_detail" class="viewas_type" type="detail">Detail</span>'+
+				'</span>'+
+				'<span id="browse_sortby">'+
+					'<span id="browse_sortby_posted" class="sortby_type" type="posted">Date</span><span id="browse_sortby_interestingness" class="sortby_type" type="interestingness">Rank</span>'+
+				'</span>'+
+			'</div>'+
+			'<div id="browse_photolist" class="photolist" style="top:18.5em;"></div>'+
+		'</div>';
+	  $(ss).appendTo('#tabs');
+	},
+
 	init: function() {
 		function refresh() {
 			try {
@@ -758,21 +800,21 @@ var browse_ctl = {
 				break;
 			}
 			case 'SPAN:perpage_num': {
-				$('#browse_perpage').find('span').each(function(i) { this.className = 'perpage_num'; });
+				$('#browse_perpage').find('span').attr('class', 'perpage_num');
 				e.target.className = 'perpage_curr';
 				settings_ctl._save();
 				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
 				break;
 			}
 			case 'SPAN:sortby_type': {
-				$('#browse_sortby').find('span').each(function(i) { this.className = 'sortby_type'; });
+				$('#browse_sortby').find('span').attr('class', 'sortby_type');
 				e.target.className = 'sortby_curr';
 				settings_ctl._save();
 				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
 				break;
 			}
 			case 'SPAN:viewas_type': {
-				$('#browse_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
+				$('#browse_viewas').find('span').attr('class', 'viewas_type');
 				e.target.className = 'viewas_curr';
 				settings_ctl._save();
 				if (!browse_ctl.curr_photo_list) return;
@@ -780,13 +822,13 @@ var browse_ctl = {
 				break;
 			}
 			case 'SPAN:tag': {
-				$('#browse_taglist').find('span').each(function(i) { this.className = 'tag'; });
+				$('#browse_taglist').find('span').attr('class', 'tag');
 				e.target.className = 'tag_curr';
 				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
 				break;
 			}
 			case 'SPAN:taglist_clear': {
-				$('#browse_taglist').find('span').each(function(i) { this.className = 'tag'; });
+				$('#browse_taglist').find('span').attr('class', 'tag');
 				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
 				break;
 			}
@@ -919,31 +961,6 @@ var browse_ctl = {
 					ccc += '</div>';
 					$('#browse_taglist').append(ccc);
 				});
-
-//        flickr.places.getInfo({place_id:rsp.places.place[0].place_id}, function(rsp, params, api) {
-//          if (!rsp || !rsp.place) return;
-//
-//          var ou = '';
-//          $.each(['country', 'region', 'county', 'locality'], function(i,loc) {
-//            if (rsp.place[loc]) {
-//              ou += '<a target="_blank" href="http://www.flickr.com/places'+rsp.place[loc].place_url+'">'+rsp.place[loc]._content+'</a> ';
-//            }
-//          });
-//          $pl.html(ou);
-//
-//          if (!rsp.place.shapedata || !rsp.place.shapedata.polylines || !rsp.place.shapedata.polylines.polyline) return;
-//
-//          $pl.get(0).poly = [];
-//          $.each(rsp.place.shapedata.polylines.polyline, function(k, v) {
-//            var pp = [];
-//            $.each(v._content.split(' '), function(k2,v2) {
-//              pp.push(GLatLng.fromUrlValue(v2));
-//            });
-//            var ppp = new GPolygon(pp);
-//            gmap.addOverlay(ppp);
-//            $pl.get(0).poly.push(ppp);
-//          });
-//        });
 			});
 		}
 
@@ -978,18 +995,6 @@ var browse_ctl = {
 
 		ui_ctl.beginLoading();
 		flickr.photos.search(opts, this.refreshPhotoGroupCallback, !!user);
-/*
-    var $pl = $('#place_link');
-    if (!$pl.get(0).pos || browse_ctl.isNeedRefresh($pl.get(0).pos)) {
-      $pl.get(0).pos = pos;
-      if ($pl.get(0).poly) {
-        $.each($pl.get(0).poly, function(k, v) {
-          gmap.removeOverlay(v);
-        });
-        $pl.get(0).poly = null;
-      }
-      $pl.empty();
-*/
 	},
 
 	onRefreshClick: function() {
@@ -1024,14 +1029,18 @@ var browse_ctl = {
 	},
 	onActive: function() {
 		this._center = this.__timestamp = null;
-		ui_ctl.onActive('browse');
+		ui_ctl._showFocus();
+		ui_ctl._showRange();
+		ui_ctl._showRefreshControl();
 		browse_ctl.refreshLinks();
 
 		this.refreshPhotoGroup({no_delay:true, updatepos:true});
 		settings_ctl._save();
 	},
 	onDeActive: function() {
-		ui_ctl.onDeActive('browse');
+		ui_ctl._hideFocus();
+		ui_ctl._hideRange();
+		ui_ctl._hideRefreshControl();
 		$('#links_currentmap').hide();
 		this.clearGroupMarker();
 	}
@@ -1045,6 +1054,55 @@ var geotag_ctl = {
 	curr_photo_list: null,
 	curr_gpx: [],
 	curr_marker: null,
+
+	preinit: function() {
+		if (!user) return;
+
+		$('<a id="geotag_switch" href="javascript:void(0)">GeoTagging</a>').appendTo('.switch');
+
+		$(
+		'<div id="geotag_tab" class="tab">'+
+			'<div class="tabrow" style="height:2em;">'+
+				'<select id="geotag_filter">'+
+					'<option value="0" title="Select">Select filter...</option>'+
+					'<option value="all" title="All your content">All your content</option>'+
+					'<option value="uploaded">Your recent uploaded content</option>'+
+					'<option value="updated">Your recent updated content</option>'+
+					'<option value="notag">Your non-tagged content</option>'+
+					'<option value="noset">Your content not in a set</option>'+
+					'<option value="geotag">Your geotagged content</option>'+
+					'<option value="nogeotag">Your non-geotagged content</option>'+
+					'<option value="inrange">Your content in this range</option>'+
+					'<optgroup label="Your sets" id="photoset_optgroup"></optgroup>'+
+					'<optgroup label="Popular Tags" id="populartags_optgroup"></optgroup>'+
+					'<optgroup label="Your groups" id="publicgroups_optgroup"></optgroup>'+
+				'</select>'+
+			'</div>'+
+			'<div class="tabrow" style="height:2em;">'+
+				'<span>Load GPX file:'+
+					'<form id="geotag_upload_file_form" action="/gpxupload/preview" target="geotag_upload_file_iframe" enctype="multipart/form-data" method="post" style="display:inline;">'+
+						'<input name="upload_file_input" type="file"/> <input id="geotag_upload_file_preview" type="submit" value="Show"/> <input id="geotag_upload_file_clear" type="submit" value="Clear"/>'+
+					'</form>'+
+					'<iframe name="geotag_upload_file_iframe" style="border:0 none; padding:0; height:0; width:0; position:absolute;"></iframe>'+
+				'</span>'+
+			'</div>'+
+			'<div class="tabrow" style="height:2em;">'+
+				'<span id="geotag_perpage" style="float:right;">'+
+					'<span id="geotag_perpage_25" class="perpage_num">25</span><span id="geotag_perpage_50" class="perpage_num">50</span><span id="geotag_perpage_100" class="perpage_num">100</span><span id="geotag_perpage_200" class="perpage_num">200</span>'+
+				'</span>'+
+				'<span id="geotag_pager"></span>'+
+			'</div>'+
+			'<div class="tabrow" style="height:2em;">'+
+				'<span id="geotag_viewas" style="float:right;">'+
+					'<span id="geotag_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="geotag_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="geotag_viewas_detail" class="viewas_type" type="detail">Detail</span>'+
+				'</span>'+
+				'<span id="geotag_operation" style="display:none;">'+
+					'<a id="geotag_set_location" href="javascript:void(0)">Set Location</a> <a id="geotag_clear_location" href="javascript:void(0)">Clear Location</a>'+
+				'</span>'+
+			'</div>'+
+			'<div id="geotag_photolist" class="photolist" style="top:8em;"></div>'+
+		'</div>').appendTo('#tabs');
+	},
 
 	init: function() {
 		if (!user) return;
@@ -1186,7 +1244,7 @@ var geotag_ctl = {
 				break;
 			}
 			case 'SPAN:perpage_num': {
-				$('#geotag_perpage').find('span').each(function(i) { this.className = 'perpage_num'; });
+				$('#geotag_perpage').find('span').attr('class', 'perpage_num');
 				e.target.className = 'perpage_curr';
 
 				settings_ctl._save();
@@ -1195,7 +1253,7 @@ var geotag_ctl = {
 				break;
 			}
 			case 'SPAN:viewas_type': {
-				$('#geotag_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
+				$('#geotag_viewas').find('span').attr('class', 'viewas_type');
 				e.target.className = 'viewas_curr';
 
 				settings_ctl._save();
@@ -1369,13 +1427,13 @@ var geotag_ctl = {
 	onActive: function() {
 		geotag_ctl.showCurrMarker();
 		geotag_ctl.showGPX();
-		ui_ctl.onActive('geotag');
+		ui_ctl._showFocus();
 		settings_ctl._save();
 	},
 	onDeActive: function() {
 		geotag_ctl.hideCurrMarker();
 		geotag_ctl.hideGPX();
-		ui_ctl.onDeActive('geotag');
+		ui_ctl._hideFocus();
 	}
 };
 
@@ -1385,6 +1443,36 @@ var phoset_ctl = {
 	curr_photo_list: null,
 	curr_gpx: [],
 	__markers: [],
+
+	preinit: function() {
+		if (!user) return;
+
+		$('<a id="phoset_switch" href="javascript:void(0)">Photoset</a>').appendTo('.switch');
+
+		$(
+		'<div id="phoset_tab" class="tab">'+
+			'<div class="tabrow" style="height:2em;">'+
+				'<select id="phoset_photoset_list">'+
+					'<option value="0" title="Select">Select photoset...</option>'+
+				'</select>'+
+			'</div>'+
+//			'<div class="tabrow">'+
+//				'<span>Load GPX file:'+
+//					'<form id="phoset_upload_file_form" action="/gpxupload/preview" target="phoset_upload_file_iframe" enctype="multipart/form-data" method="post" style="display:inline;">'+
+//						'<input name="upload_file_input" type="file"/> <input id="phoset_upload_file_preview" type="submit" value="Show"/> <input id="phoset_upload_file_clear" type="submit" value="Clear"/> <input id="phoset_upload_file_save" type="submit" value="Save"/>'+
+//					'</form>'+
+//					'<iframe name="phoset_upload_file_iframe" style="border:0 none; padding:0; height:0; width:0; position:absolute;"></iframe>'+
+//				'</span>'+
+//			'</div>'+
+			'<div class="tabrow" style="height:2em;">'+
+				'<span id="phoset_viewas" style="float:right;">'+
+					'<span id="phoset_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="phoset_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="phoset_viewas_detail" class="viewas_type" type="detail">Detail</span>'+
+				'</span>'+
+			'</div>'+
+			'<div id="phoset_photolist" class="photolist" style="top:4em;"></div>'+
+		'</div>').appendTo('#tabs');
+
+	},
 
 	init: function() {
 		if (!user) return;
@@ -1417,7 +1505,7 @@ var phoset_ctl = {
 
 			switch (clickon) {
 			case 'SPAN:viewas_type': {
-				$('#phoset_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
+				$('#phoset_viewas').find('span').attr('class', 'viewas_type');
 				e.target.className = 'viewas_curr';
 
 				settings_ctl._save();
@@ -1555,12 +1643,10 @@ var phoset_ctl = {
 		var photoset_id = RegExp.$1;
 		$('.popup_panel').hide();
 		$('#links_photoset').attr('href', '/show?fset='+photoset_id).show();
-		ui_ctl.onActive('phoset');
 		settings_ctl._save();
 	},
 	onDeActive: function() {
 		$('#links_photoset').hide();
-		ui_ctl.onDeActive('phoset');
 		phoset_ctl.hideGPX();
 		phoset_ctl.clearGroupMarker();
 	}
@@ -1572,6 +1658,12 @@ var show_ctl = {
 	curr_photo_list: null,
 	_markers: [],
 
+	preinit: function() {
+		$(
+		'<div id="show_tab" class="tab">'+
+			'<div id="show_photolist" class="photolist" style="top:.5em;"></div>'+
+		'</div>').appendTo('#tabs');
+	},
 	init: function() {
 		$('#show_title_dropdn_toggle').click(function() {
 			$('#show_title_dropdn').slideToggle('fast');
@@ -1739,11 +1831,9 @@ var show_ctl = {
 	onMapDragend: function() {},
 	onMapZoomend: function() { show_ctl.regroupPhotos(); },
 	onActive: function() {
-		this.loadGroupMarker();
-		ui_ctl.onActive('phoset');
+		show_ctl.loadGroupMarker();
 	},
 	onDeActive: function() {
-		this.onDeActive('phoset');
 		show_ctl.clearGroupMarker();
 	}
 };
@@ -1755,6 +1845,11 @@ mod_ctl = {
 	getModCtl: function(mod) { return this.mods[mod]; },
 	getCurrentMod: function() { return this.last_mod; },
 	getCurrentModCtl: function() { return this.mods[this.last_mod]; },
+	init: function(mods) {
+		$.each(mods, function(k,v) {
+			mod_ctl.mods[v].preinit();
+		});
+	},
 	switchTo: function(mod) {
 		if (mod === this.last_mod) return;
 		$('.tab').hide();

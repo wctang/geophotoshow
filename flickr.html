@@ -25,7 +25,7 @@ img.link          { width:15px; height:15px; background:transparent url(/images/
 
 div.selable       { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; cursor:pointer; line-height:20px; color:lightblue; }
 div.selable:hover {                          background:transparent url(/images/icons.png) no-repeat scroll -38px -207px; color:white; }
-div.selected      { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; line-height:20px; font-weight:bold; }
+div.selected      { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; cursor:default; line-height:20px; font-weight:bold; }
 
 .sdh   { position:absolute; left:0px; top:27px; height:5px; }
 .sdv   { position:absolute; left:0px; top:27px; width:5px; }
@@ -58,7 +58,8 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 
 .bar { position:relative; height:27px; line-height:27px; }
 .bar span { font-size:80%; margin-left:10px; }
-.switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:auto; }
+.switch a { padding:0 5px; border-right:1px solid gray; border-left:1px solid gray; }
+.switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:default; }
 #mainbar span { float:right; padding-right:2em; }
 
 #tabs { position:relative; font-size:80%; background-color:white; }
@@ -172,16 +173,6 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
       <input id="links_photoset_html" type="text" tabindex="401" style="width:29em;"/></div>
     </div>
   </div>
-  <div id="screenrange" style="display:none;">
-    <div id="focus" class="range"><div class="vline" style="top:0px; left:20px; height:41px;"></div><div class="hline" style="top:20px; left:0px; width:41px;"></div></div>
-    <div id="range_lt" class="range"><div class="vline" style="top:0px; left:0px; height:100px;"></div><div class="hline" style="top:0px; left:0px; width:100px;"></div></div>
-    <div id="range_rb" class="range"><div class="vline" style="bottom:0px; right:0px; height:100px;"></div><div class="hline" style="bottom:0px; right:0px; width:100px;"></div></div>
-  </div>
-  <div id="refresh_control" style="text-align:center; font-size:11pt; display:none;">
-    <img class="refresh" src="/images/transparent.png"/>
-    <div id="sel_auto" class="selected">Auto</div>
-    <div id="sel_manual" class="selable">Manual</div>
-  </div>
   <div id="map"></div>
   <div class="sd sdh"><div class="h1 o1"></div><div class="h2 o2"></div><div class="h3 o3"></div><div class="h4 o4"></div><div class="h5 o5"></div></div>
   <div class="sd sdv"><div class="v1 o1"></div><div class="v2 o2"></div><div class="v3 o3"></div><div class="v4 o4"></div><div class="v5 o5"></div></div>
@@ -223,113 +214,9 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
     <div class="sd sdvr"><div class="v1 o1"></div><div class="v2 o2"></div><div class="v3 o3"></div><div class="v4 o4"></div><div class="v5 o5"></div></div>
     <div class="bar" style="background-color:#E8ECF9;">
       <span class="switch">
-        <a id="browse_switch" href="javascript:void(0)">Browse</a>
-{% if user %}
-      | <a id="geotag_switch" href="javascript:void(0)">GeoTagging</a>
-      | <a id="phoset_switch" href="javascript:void(0)">Photoset</a>
-{% endif %}
       </span>
     </div>
     <div id="tabs">
-      <div id="browse_tab" class="tab">
-        <div class="tabrow" style="height:2em;">
-          <select id="browse_type">
-            <option value="all" title="Search all photos.">All Photos</option>
-{% if user %}
-            <option value="user" title="Only Search your photos.">Your Photos</option>
-            <optgroup label="Your contacts" id="contact_optgroup"></optgroup>
-{% endif %}
-          </select>
-        </div>
-        <div class="tabrow" style="height:2em;">
-          <form id="browse_query" style="margin:0; padding:0;"><input type="text" style="width:350px;"/> <input type="submit" value="Search"/></form>
-        </div>
-        <div class="tabrow" style="height:10em;">
-		<div><span id="plac"></span><span class="taglist_clear" style="float:right;">Clear</span></div>
-		<div id="browse_taglist" class="taglist" style="height:7.5em;"></div>
-        </div>
-        <div class="tabrow" style="height:2em;">
-          <span id="browse_perpage" style="float:right;">
-            <span id="browse_perpage_25" class="perpage_num">25</span><span id="browse_perpage_50" class="perpage_num">50</span><span id="browse_perpage_100" class="perpage_num">100</span><span id="browse_perpage_200" class="perpage_num">200</span>
-          </span>
-          <span id="browse_pager"></span>
-        </div>
-        <div class="tabrow" style="height:2em;">
-          <span id="browse_viewas" style="float:right;">
-            <span id="browse_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="browse_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="browse_viewas_detail" class="viewas_type" type="detail">Detail</span>
-          </span>
-          <span id="browse_sortby">
-            <span id="browse_sortby_posted" class="sortby_type" type="posted">Date</span><span id="browse_sortby_interestingness" class="sortby_type" type="interestingness">Rank</span>
-          </span>
-        </div>
-        <div id="browse_photolist" class="photolist" style="top:18.5em;"></div>
-      </div>
-{% if user %}
-      <div id="geotag_tab" class="tab">
-        <div class="tabrow" style="height:2em;">
-          <select id="geotag_filter">
-            <option value="0" title="Select">Select filter...</option>
-            <option value="all" title="All your content">All your content</option>
-            <option value="uploaded">Your recent uploaded content</option>
-            <option value="updated">Your recent updated content</option>
-            <option value="notag">Your non-tagged content</option>
-            <option value="noset">Your content not in a set</option>
-            <option value="geotag">Your geotagged content</option>
-            <option value="nogeotag">Your non-geotagged content</option>
-            <option value="inrange">Your content in this range</option>
-            <optgroup label="Your sets" id="photoset_optgroup"></optgroup>
-            <optgroup label="Popular Tags" id="populartags_optgroup"></optgroup>
-            <optgroup label="Your groups" id="publicgroups_optgroup"></optgroup>
-          </select>
-        </div>
-        <div class="tabrow" style="height:2em;">
-          <span>Load GPX file:
-            <form id="geotag_upload_file_form" action="/gpxupload/preview" target="geotag_upload_file_iframe" enctype="multipart/form-data" method="post" style="display:inline;">
-              <input name="upload_file_input" type="file"/> <input id="geotag_upload_file_preview" type="submit" value="Show"/> <input id="geotag_upload_file_clear" type="submit" value="Clear"/>
-            </form>
-            <iframe name="geotag_upload_file_iframe" style="border:0 none; padding:0; height:0; width:0; position:absolute;"></iframe>
-          </span>
-        </div>
-        <div class="tabrow" style="height:2em;">
-          <span id="geotag_perpage" style="float:right;">
-            <span id="geotag_perpage_25" class="perpage_num">25</span><span id="geotag_perpage_50" class="perpage_num">50</span><span id="geotag_perpage_100" class="perpage_num">100</span><span id="geotag_perpage_200" class="perpage_num">200</span>
-          </span>
-          <span id="geotag_pager"></span>
-        </div>
-        <div class="tabrow" style="height:2em;">
-          <span id="geotag_viewas" style="float:right;">
-            <span id="geotag_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="geotag_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="geotag_viewas_detail" class="viewas_type" type="detail">Detail</span>
-          </span>
-          <span id="geotag_operation" style="display:none;">
-            <a id="geotag_set_location" href="javascript:void(0)">Set Location</a> <a id="geotag_clear_location" href="javascript:void(0)">Clear Location</a>
-          </span>
-        </div>
-        <div id="geotag_photolist" class="photolist" style="top:8em;"></div>
-      </div>
-      <div id="phoset_tab" class="tab">
-        <div class="tabrow" style="height:2em;">
-          <select id="phoset_photoset_list">
-            <option value="0" title="Select">Select photoset...</option>
-          </select>
-        </div>
-<!--
-        <div class="tabrow">
-          <span>Load GPX file:
-            <form id="phoset_upload_file_form" action="/gpxupload/preview" target="phoset_upload_file_iframe" enctype="multipart/form-data" method="post" style="display:inline;">
-              <input name="upload_file_input" type="file"/> <input id="phoset_upload_file_preview" type="submit" value="Show"/> <input id="phoset_upload_file_clear" type="submit" value="Clear"/> <input id="phoset_upload_file_save" type="submit" value="Save"/>
-            </form>
-            <iframe name="phoset_upload_file_iframe" style="border:0 none; padding:0; height:0; width:0; position:absolute;"></iframe>
-          </span>
-        </div>
--->
-        <div class="tabrow" style="height:2em;">
-          <span id="phoset_viewas" style="float:right;">
-            <span id="phoset_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="phoset_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="phoset_viewas_detail" class="viewas_type" type="detail">Detail</span>
-          </span>
-        </div>
-        <div id="phoset_photolist" class="photolist" style="top:4em;"></div>
-      </div>
-{% endif %}
     </div>
   </div>
 </div>
@@ -384,7 +271,13 @@ ui_ctl = {
 
 	$refresh_div: null,
 	init: function() {
-		function RefreshControl() {}
+		$(
+		'<div id="refresh_control" style="text-align:center; font-size:11pt; display:none;">'+
+			'<img class="refresh" src="/images/transparent.png"/>'+
+			'<div id="sel_auto" class="selected">Auto</div>'+
+			'<div id="sel_manual" class="selable">Manual</div>'+
+		'</div>').insertBefore('#map');
+		var RefreshControl = function() {}
 		RefreshControl.prototype = new GControl();
 		RefreshControl.prototype.initialize = function(map) {
 			ui_ctl.$refresh_div = $('#refresh_control');
@@ -408,9 +301,15 @@ ui_ctl = {
 		RefreshControl.prototype.getDefaultPosition = function() {
 			return new GControlPosition(G_ANCHOR_TOP_RIGHT, new GSize(20, 50));
 		};
-
 		gmap.addControl(new RefreshControl());
 
+
+		$(
+		'<div id="screenrange" style="display:none;">'+
+			'<div id="focus" class="range"><div class="vline" style="top:0px; left:20px; height:41px;"></div><div class="hline" style="top:20px; left:0px; width:41px;"></div></div>'+
+			'<div id="range_lt" class="range"><div class="vline" style="top:0px; left:0px; height:100px;"></div><div class="hline" style="top:0px; left:0px; width:100px;"></div></div>'+
+			'<div id="range_rb" class="range"><div class="vline" style="bottom:0px; right:0px; height:100px;"></div><div class="hline" style="bottom:0px; right:0px; width:100px;"></div></div>'+
+		'</div>').insertBefore('#map');
 		gmap.getContainer().appendChild($('#focus').get(0));
 		gmap.getContainer().appendChild($('#range_lt').get(0));
 		gmap.getContainer().appendChild($('#range_rb').get(0));
@@ -464,8 +363,6 @@ ui_ctl = {
 		return this.$refresh_div.find('#sel_auto').hasClass('selected');
 	},
 
-
-
 	_showRefreshControl: function() {
 		if (!this.$refresh_div) return;
 		this.$refresh_div.show();
@@ -474,6 +371,7 @@ ui_ctl = {
 		if (!this.$refresh_div) return;
 		this.$refresh_div.hide();
 	},
+
 	_showFocus: function() { $('#focus').show(); },
 	_hideFocus: function() { $('#focus').hide(); },
 	_showRange: function() { $('#range_lt, #range_rb').show(); },
@@ -528,36 +426,6 @@ ui_ctl = {
 
 	savePosition: function() {
 		$.cookie('currpos', gmap.getCenter().toUrlValue()+','+gmap.getZoom(), {path:'/', expires:365});
-	},
-
-	onActive: function(mod) {
-		switch(mod) {
-			case 'browse':
-			this._showFocus();
-			this._showRange();
-			this._showRefreshControl();
-			break;
-			case 'geotag':
-			this._showFocus();
-			break;
-			case 'phoset':
-			break;
-		}
-	},
-
-	onDeActive: function(mod) {
-		switch(mod) {
-			case 'browse':
-			this._hideFocus();
-			this._hideRange();
-			this._hideRefreshControl();
-			break;
-			case 'geotag':
-			this._hideFocus();
-			break;
-			case 'phoset':
-			break;
-		}
 	},
 
 	on_message: function(str) {
@@ -642,6 +510,27 @@ if (jq_loaded && jq_notrun) {
 		}
 	});
 
+}
+
+if (jq_loaded && mp_loaded && mp_notrun) {
+	mp_notrun = false;
+
+
+// One-shot position request.
+//navigator.geolocation.getCurrentPosition(function (position) {
+//	console.log(position.coords.latitude, position.coords.longitude, position.coords.altitude, position.coords.accuracy);
+//});
+
+//var geo = google.gears.factory.create('beta.geolocation');
+//geo.getCurrentPosition(function(position) {
+//  updateMap(position.latitude, position.longitude);
+//});
+
+	mod_ctl.getModCtl('common').init();
+	mod_ctl.init(['browse','geotag','phoset']);
+	ui_ctl.init();
+	showpanel_ctl.init();
+
 	$(".switch a").click(function(){
 		mod_ctl.switchTo($(this).attr('id').replace(/_switch/,''));
 	});
@@ -670,62 +559,43 @@ if (jq_loaded && jq_notrun) {
 		}
 	};
 
-/*
-	$('#phoset_upload_file_clear').click(function() {
-		mod_ctl.getModCtl('phoset').hideGPX(true);
-		return false;
-	});
-	$('#phoset_upload_file_preview').click(function() {
-		ui_ctl.beginLoading();
-		$('#phoset_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.phoset_gpx_preview').submit();
-		return false;
-	});
-	window.phoset_gpx_preview = function(rsp) {
-		try {
-			if (!mod_ctl) return;
 
-			if (rsp.stat !== 'ok') {
-				ui_ctl.on_error(rsp.message);
-			} else {
-				mod_ctl.getModCtl('phoset').showGPX(rsp.gpx);
-			}
-		} finally {
-			ui_ctl.endLoading();
-		}
-	};
-
-	$('#phoset_upload_file_save').click(function() {
-		ui_ctl.beginLoading();
-		$('#phoset_upload_file_form').attr('action','/gpxupload/save?cb=window.parent.phoset_gpx_save').submit();
-		return false;
-	});
-	window.phoset_gpx_save = function(rsp) {
-		try {
-		} finally {
-			ui_ctl.endLoading();
-		}
-	};
-*/
-}
-
-if (jq_loaded && mp_loaded && mp_notrun) {
-	mp_notrun = false;
+//	$('#phoset_upload_file_clear').click(function() {
+//		mod_ctl.getModCtl('phoset').hideGPX(true);
+//		return false;
+//	});
+//	$('#phoset_upload_file_preview').click(function() {
+//		ui_ctl.beginLoading();
+//		$('#phoset_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.phoset_gpx_preview').submit();
+//		return false;
+//	});
+//	window.phoset_gpx_preview = function(rsp) {
+//		try {
+//			if (!mod_ctl) return;
+//
+//			if (rsp.stat !== 'ok') {
+//				ui_ctl.on_error(rsp.message);
+//			} else {
+//				mod_ctl.getModCtl('phoset').showGPX(rsp.gpx);
+//			}
+//		} finally {
+//			ui_ctl.endLoading();
+//		}
+//	};
+//
+//	$('#phoset_upload_file_save').click(function() {
+//		ui_ctl.beginLoading();
+//		$('#phoset_upload_file_form').attr('action','/gpxupload/save?cb=window.parent.phoset_gpx_save').submit();
+//		return false;
+//	});
+//	window.phoset_gpx_save = function(rsp) {
+//		try {
+//		} finally {
+//			ui_ctl.endLoading();
+//		}
+//	};
 
 
-// One-shot position request.
-//navigator.geolocation.getCurrentPosition(function (position) {
-//	console.log(position.coords.latitude, position.coords.longitude, position.coords.altitude, position.coords.accuracy);
-//});
-
-//var geo = google.gears.factory.create('beta.geolocation');
-//geo.getCurrentPosition(function(position) {
-//  updateMap(position.latitude, position.longitude);
-//});
-
-	mod_ctl.getModCtl('common').init();
-
-	ui_ctl.init();
-	showpanel_ctl.init();
 	settings_ctl._init();
 
 	if (/^#ll=([\-\d\,\.]+)&z=(\d+)(.*)$/.exec(location.hash)) {
@@ -737,11 +607,11 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 
 	ui_ctl.setSettings(settings_ctl);
 
+	mod_ctl.switchTo('browse');
+
 	if (user) {
-		mod_ctl.switchTo(settings_ctl.mode);
 		$.cookie('autologin', 'true', {expires:365});
 	} else {
-		mod_ctl.switchTo('browse');
 		$.cookie('autologin', 'false', {expires:365});
 	}
 }
@@ -749,8 +619,9 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 if (jq_loaded && mp_loaded && an_loaded && an_notrun) {
 	an_notrun = false;
 
-	if( typeof _gat !== 'undefined')
+	if( typeof _gat !== 'undefined') {
 		_gat._getTracker("UA-359113-8")._trackPageview();
+	}
 }
 
 };

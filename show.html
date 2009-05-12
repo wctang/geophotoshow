@@ -169,9 +169,6 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
     <a id="panel_toggle" href="javascript:void(0)" style="position:absolute;"><img class="col" style="position:absolute; right:-1px;" src="/images/transparent.png"/></a>
     <div class="sd sdvr"><div class="v1 o1"></div><div class="v2 o2"></div><div class="v3 o3"></div><div class="v4 o4"></div><div class="v5 o5"></div></div>
     <div id="tabs">
-      <div id="show_tab" class="tab">
-        <div id="show_photolist" class="photolist" style="top:.5em;"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -250,11 +247,7 @@ ui_ctl = {
 	},
 
 	savePosition: function() {
-		$.cookie('currpos', gmap.getCenter().toUrlValue()+','+gmap.getZoom(), {path:'/', expires:365});
 	},
-
-	onActive: function(mod) {},
-	onDeActive: function(mod) {},
 
 	on_message: function(str) {},
 	on_error: function(str) {
@@ -266,14 +259,12 @@ ui_ctl = {
 <script type="text/javascript" src="http://maps.google.com/maps?file=api&amp;v=2.x&amp;key=ABQIAAAA5iyLqLpUbk1qBe2volmsqxSGaeOUwwPiRwprcQIp1asxXaPRShRiXXnXJ0iaG0Cp007xopXguZyRPQ"></script>
 <script type="text/javascript">
 
+
 var jq_loaded = false, jq_notrun = true, mp_loaded = false, mp_notrun = true, an_loaded = false, an_notrun = true;
 function init() {
 
 if (jq_loaded && jq_notrun) {
 	jq_notrun = false;
-
-	// http://dev.jquery.com/browser/trunk/plugins/cookie/jquery.cookie.min.js r6165
-	jQuery.cookie=function(name,value,options){if(typeof value!='undefined'){options=options||{};if(value===null){value='';options=$.extend({},options);options.expires=-1;}var expires='';if(options.expires&&(typeof options.expires=='number'||options.expires.toUTCString)){var date;if(typeof options.expires=='number'){date=new Date();date.setTime(date.getTime()+(options.expires*24*60*60*1000));}else{date=options.expires;}expires='; expires='+date.toUTCString();}var path=options.path?'; path='+(options.path):'';var domain=options.domain?'; domain='+(options.domain):'';var secure=options.secure?'; secure':'';document.cookie=[name,'=',encodeURIComponent(value),expires,path,domain,secure].join('');}else{var cookieValue=null;if(document.cookie&&document.cookie!=''){var cookies=document.cookie.split(';');for(var i=0;i<cookies.length;i++){var cookie=jQuery.trim(cookies[i]);if(cookie.substring(0,name.length+1)==(name+'=')){cookieValue=decodeURIComponent(cookie.substring(name.length+1));break;}}}return cookieValue;}};
 
 	ui_ctl.onResize();
 	$(window).resize(ui_ctl.onResize);
@@ -299,11 +290,12 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 		flickr_photoset_ids.push(id);
 	}
 
-	gmap = new GMap2($('#map').get(0));
+	gmap = new GMap2(document.getElementById('map'));
 	gmap.setUIToDefault();
 	gmap.disableDoubleClickZoom();
 
 	mod_ctl.getModCtl('common').init();
+	mod_ctl.init(['show']);
 
 	showpanel_ctl.init();
 	showpanel_ctl.setAutoResize(true);
