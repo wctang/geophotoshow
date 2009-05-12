@@ -271,30 +271,16 @@ ui_ctl = {
 
 	$refresh_div: null,
 	init: function() {
-		$(
+		ui_ctl.$refresh_div = $(
 		'<div id="refresh_control" style="text-align:center; font-size:11pt; display:none;">'+
 			'<img class="refresh" src="/images/transparent.png"/>'+
 			'<div id="sel_auto" class="selected">Auto</div>'+
 			'<div id="sel_manual" class="selable">Manual</div>'+
-		'</div>').insertBefore('#map');
+		'</div>');
+		ui_ctl.$refresh_div.insertBefore('#map');
 		var RefreshControl = function() {}
 		RefreshControl.prototype = new GControl();
 		RefreshControl.prototype.initialize = function(map) {
-			ui_ctl.$refresh_div = $('#refresh_control');
-			ui_ctl.$refresh_div.click(function(e) {
-				var tagname = e.target.tagName;
-				var clsname = e.target.className;
-
-				if (tagname === 'IMG' && clsname === 'refresh') {
-					if (mod_ctl.getCurrentModCtl().onRefreshClick) {
-						mod_ctl.getCurrentModCtl().onRefreshClick();
-					}
-				} else if (tagname === 'DIV' && clsname === 'selable') {
-					ui_ctl.$refresh_div.find('.selected').attr('class', 'selable');
-					$(e.target).attr('class', 'selected');
-					settings_ctl._save();
-				}
-			});
 			map.getContainer().appendChild(ui_ctl.$refresh_div.get(0));
 			return ui_ctl.$refresh_div.get(0);
 		};
@@ -302,6 +288,28 @@ ui_ctl = {
 			return new GControlPosition(G_ANCHOR_TOP_RIGHT, new GSize(20, 50));
 		};
 		gmap.addControl(new RefreshControl());
+
+		ui_ctl.$refresh_div.click(function(e) {
+			var tagname = e.target.tagName;
+			var clsname = e.target.className;
+
+			if (tagname === 'IMG' && clsname === 'refresh') {
+				if (mod_ctl.getCurrentModCtl().onRefreshClick) {
+					mod_ctl.getCurrentModCtl().onRefreshClick();
+				}
+			} else if (tagname === 'DIV' && clsname === 'selable') {
+				ui_ctl.$refresh_div.find('.selected').attr('class', 'selable');
+				settings_ctl.refresh = $(e.target).attr('class', 'selected').attr('id').replace('sel_', '');
+				settings_ctl._save();
+			}
+		});
+		if (settings_ctl.refresh === 'auto') {
+			ui_ctl.$refresh_div.find('#sel_auto').attr('class', 'selected');
+			ui_ctl.$refresh_div.find('#sel_manual').attr('class', 'selable');
+		} else {
+			ui_ctl.$refresh_div.find('#sel_auto').attr('class', 'selable');
+			ui_ctl.$refresh_div.find('#sel_manual').attr('class', 'selected');
+		}
 
 
 		$(
@@ -316,51 +324,6 @@ ui_ctl = {
 		this._onResize();
 		this._hideFocus();
 		this._hideRange();
-	},
-
-	updateSettings: function(sett) {
-		sett.refresh = (this.isAutoRefresh() ? 'auto' : 'manual');
-		sett.browse_perpage = $('#browse_perpage').find('.perpage_curr').text();
-		sett.browse_viewas = $('#browse_viewas').find('.viewas_curr').attr('type');
-		sett.browse_sortby = $('#browse_sortby').find('.sortby_curr').attr('type');
-		if (user) {
-			sett.geotag_perpage = $('#geotag_perpage').find('.perpage_curr').text();
-			sett.geotag_viewas = $('#geotag_viewas').find('.viewas_curr').attr('type');
-			sett.phoset_viewas = $('#phoset_viewas').find('.viewas_curr').attr('type');
-		}
-	},
-	setSettings: function(sett) {
-		if (this.$refresh_div) {
-			if (sett.refresh === 'auto') {
-				this.$refresh_div.find('#sel_auto').attr('class', 'selected');
-				this.$refresh_div.find('#sel_manual').attr('class', 'selable');
-			} else {
-				this.$refresh_div.find('#sel_auto').attr('class', 'selable');
-				this.$refresh_div.find('#sel_manual').attr('class', 'selected');
-			}
-		}
-
-		$('#browse_perpage').find('span').each(function(i) { this.className = 'perpage_num'; });
-		$('#browse_perpage_'+sett.browse_perpage).get(0).className = 'perpage_curr';
-		$('#browse_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
-		$('#browse_viewas_'+sett.browse_viewas).get(0).className = 'viewas_curr';
-		$('#browse_sortby').find('span').each(function(i) { this.className = 'sortby_type'; });
-		$('#browse_sortby_'+sett.browse_sortby).get(0).className = 'sortby_curr';
-
-		if (user) {
-			$('#geotag_perpage').find('span').each(function(i) { this.className = 'perpage_num'; });
-			$('#geotag_perpage_'+sett.geotag_perpage).get(0).className = 'perpage_curr';
-			$('#geotag_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
-			$('#geotag_viewas_'+sett.geotag_viewas).get(0).className = 'viewas_curr';
-
-			$('#phoset_viewas').find('span').each(function(i) { this.className = 'viewas_type'; });
-			$('#phoset_viewas_'+sett.phoset_viewas).get(0).className = 'viewas_curr';
-		}
-	},
-
-	isAutoRefresh: function() {
-		if (!this.$refresh_div) return;
-		return this.$refresh_div.find('#sel_auto').hasClass('selected');
 	},
 
 	_showRefreshControl: function() {
@@ -515,7 +478,6 @@ if (jq_loaded && jq_notrun) {
 if (jq_loaded && mp_loaded && mp_notrun) {
 	mp_notrun = false;
 
-
 // One-shot position request.
 //navigator.geolocation.getCurrentPosition(function (position) {
 //	console.log(position.coords.latitude, position.coords.longitude, position.coords.altitude, position.coords.accuracy);
@@ -526,6 +488,8 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 //  updateMap(position.latitude, position.longitude);
 //});
 
+	settings_ctl._init();
+
 	mod_ctl.getModCtl('common').init();
 	mod_ctl.init(['browse','geotag','phoset']);
 	ui_ctl.init();
@@ -534,10 +498,6 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 	$(".switch a").click(function(){
 		mod_ctl.switchTo($(this).attr('id').replace(/_switch/,''));
 	});
-
-	settings_ctl._init();
-
-	ui_ctl.setSettings(settings_ctl);
 
 	mod_ctl.switchTo('browse');
 

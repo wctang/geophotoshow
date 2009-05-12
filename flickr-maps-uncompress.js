@@ -281,7 +281,6 @@ settings_ctl = {
 		if (user) { // don't change mode setting when not sign in.
 			this.mode = mod_ctl.getCurrentMod();
 		}
-		ui_ctl.updateSettings(this);
 
 		var ss = [];
 		$.each(this, function(k,v) {
@@ -760,12 +759,18 @@ var browse_ctl = {
 			'<div id="browse_photolist" class="photolist" style="top:18.5em;"></div>'+
 		'</div>';
 		$(ss).appendTo('#tabs');
+
+		$('#browse_perpage').find('span').attr('class', 'perpage_num');
+		$('#browse_perpage_'+settings_ctl.browse_perpage).attr('class', 'perpage_curr');
+		$('#browse_viewas').find('span').attr('class', 'viewas_type');
+		$('#browse_viewas_'+settings_ctl.browse_viewas).attr('class', 'viewas_curr');
+		$('#browse_sortby').find('span').attr('class', 'sortby_type');
+		$('#browse_sortby_'+settings_ctl.browse_sortby).attr('class', 'sortby_curr');
 	},
 
 	init: function() {
 		function refresh() {
 			try {
-				settings_ctl._save();
 				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
 			} finally {
 				return false;
@@ -808,21 +813,21 @@ var browse_ctl = {
 			}
 			case 'SPAN:perpage_num': {
 				$('#browse_perpage').find('span').attr('class', 'perpage_num');
-				e.target.className = 'perpage_curr';
+				settings_ctl.browse_perpage = $(e.target).attr('class', 'perpage_curr').attr('id').replace('browse_perpage_', '');
 				settings_ctl._save();
 				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
 				break;
 			}
 			case 'SPAN:sortby_type': {
 				$('#browse_sortby').find('span').attr('class', 'sortby_type');
-				e.target.className = 'sortby_curr';
+				settings_ctl.browse_sortby = $(e.target).attr('class', 'sortby_curr').attr('type');
 				settings_ctl._save();
 				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
 				break;
 			}
 			case 'SPAN:viewas_type': {
 				$('#browse_viewas').find('span').attr('class', 'viewas_type');
-				e.target.className = 'viewas_curr';
+				settings_ctl.browse_viewas = $(e.target).attr('class', 'viewas_curr').attr('type');
 				settings_ctl._save();
 				if (!browse_ctl.curr_photo_list) return;
 				browse_ctl.fillPhotoList();
@@ -1014,7 +1019,6 @@ var browse_ctl = {
 		var c = gmap.getCenter().toUrlValue();
 		var z = gmap.getZoom();
 
-		ui_ctl.setSettings(settings_ctl);
 		$('#links_currentmap').attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page).show();
 	},
 	onMapDragend: function() {
@@ -1042,7 +1046,6 @@ var browse_ctl = {
 		browse_ctl.refreshLinks();
 
 		this.refreshPhotoGroup({no_delay:true, updatepos:true});
-		settings_ctl._save();
 	},
 	onDeActive: function() {
 		ui_ctl._hideFocus();
@@ -1109,6 +1112,11 @@ var geotag_ctl = {
 			'</div>'+
 			'<div id="geotag_photolist" class="photolist" style="top:8em;"></div>'+
 		'</div>').appendTo('#tabs');
+
+		$('#geotag_perpage').find('span').attr('class', 'perpage_num');
+		$('#geotag_perpage_'+settings_ctl.geotag_perpage).attr('class', 'perpage_curr');
+		$('#geotag_viewas').find('span').attr('class', 'viewas_type');
+		$('#geotag_viewas_'+settings_ctl.geotag_viewas).attr('class', 'viewas_curr');
 	},
 
 	init: function() {
@@ -1134,11 +1142,9 @@ var geotag_ctl = {
 		});
 
 		$('#geotag_filter').change(function() {
-			settings_ctl._save();
 			geotag_ctl.selected = [];
 			$('#geotag_operation').hide();
-			geotag_ctl.page = 1;
-			geotag_ctl.refreshPhotoList();
+			geotag_ctl.refreshPhotoList({page:1});
 		});
 
 		$('#geotag_set_location').click(function() {
@@ -1175,7 +1181,7 @@ var geotag_ctl = {
 
 				geotag_ctl.selected = [];
 				$('#geotag_operation').hide();
-				geotag_ctl.refreshPhotoList();
+				geotag_ctl.refreshPhotoList({});
 
 				if (params._failed.length > 0) {
 					ui_ctl.on_message('Saved. ' + params._failed + ' failed.');
@@ -1212,7 +1218,7 @@ var geotag_ctl = {
 
 				geotag_ctl.selected = [];
 				$('#geotag_operation').hide();
-				geotag_ctl.refreshPhotoList();
+				geotag_ctl.refreshPhotoList({});
 
 				if (params._failed.length > 0) {
 					ui_ctl.on_message('Remove Location. ' + params._failed + ' failed.');
@@ -1230,8 +1236,7 @@ var geotag_ctl = {
 			switch (clickon) {
 			case 'SPAN:pager_prev': {
 				if (geotag_ctl.page - 1 > 0) {
-					--geotag_ctl.page;
-					geotag_ctl.refreshPhotoList();
+					geotag_ctl.refreshPhotoList({page:geotag_ctl.page-1});
 				}
 				break;
 			}
@@ -1239,30 +1244,25 @@ var geotag_ctl = {
 				var page = parseInt($(e.target).text(),10);
 				if (page === geotag_ctl.page) break;
 
-				geotag_ctl.page = page;
-				geotag_ctl.refreshPhotoList();
+				geotag_ctl.refreshPhotoList({page:page});
 				break;
 			}
 			case 'SPAN:pager_next': {
 				if (geotag_ctl.page + 1 <= geotag_ctl.pages) {
-					++geotag_ctl.page;
-					geotag_ctl.refreshPhotoList();
+					geotag_ctl.refreshPhotoList({page:geotag_ctl.page-1});
 				}
 				break;
 			}
 			case 'SPAN:perpage_num': {
 				$('#geotag_perpage').find('span').attr('class', 'perpage_num');
-				e.target.className = 'perpage_curr';
-
+				settings_ctl.geotag_perpage = $(e.target).attr('class', 'perpage_curr').attr('id').replace('geotag_perpage_', '');
 				settings_ctl._save();
-				geotag_ctl.page = 1;
-				geotag_ctl.refreshPhotoList();
+				geotag_ctl.refreshPhotoList({page:1});
 				break;
 			}
 			case 'SPAN:viewas_type': {
 				$('#geotag_viewas').find('span').attr('class', 'viewas_type');
-				e.target.className = 'viewas_curr';
-
+				settings_ctl.geotag_viewas = $(e.target).attr('class', 'viewas_curr').attr('type');
 				settings_ctl._save();
 				if (!geotag_ctl.curr_photo_list) return;
 
@@ -1425,8 +1425,12 @@ var geotag_ctl = {
 			ui_ctl.endLoading();
 		}
 	},
-	refreshPhotoList: function() {
+	refreshPhotoList: function(actopt) {
 		if (!user) return;
+
+		if (actopt.page) {
+			geotag_ctl.page = actopt.page;
+		}
 
 		var opts = {page:geotag_ctl.page};
 		opts.per_page = settings_ctl.geotag_perpage;
@@ -1494,7 +1498,6 @@ var geotag_ctl = {
 		geotag_ctl.showCurrMarker();
 		geotag_ctl.showGPX();
 		ui_ctl._showFocus();
-		settings_ctl._save();
 	},
 	onDeActive: function() {
 		geotag_ctl.hideCurrMarker();
@@ -1538,6 +1541,8 @@ var phoset_ctl = {
 			'<div id="phoset_photolist" class="photolist" style="top:4em;"></div>'+
 		'</div>').appendTo('#tabs');
 
+		$('#phoset_viewas').find('span').attr('class', 'viewas_type');
+		$('#phoset_viewas_'+settings_ctl.phoset_viewas).attr('class', 'viewas_curr');
 	},
 
 	init: function() {
@@ -1572,8 +1577,7 @@ var phoset_ctl = {
 			switch (clickon) {
 			case 'SPAN:viewas_type': {
 				$('#phoset_viewas').find('span').attr('class', 'viewas_type');
-				e.target.className = 'viewas_curr';
-
+				settings_ctl.phoset_viewas = $(e.target).attr('class', 'viewas_curr').attr('type');
 				settings_ctl._save();
 				if (!phoset_ctl.curr_photo_list) return;
 
@@ -1709,7 +1713,6 @@ var phoset_ctl = {
 		var photoset_id = RegExp.$1;
 		$('.popup_panel').hide();
 		$('#links_photoset').attr('href', '/show?fset='+photoset_id).show();
-		settings_ctl._save();
 	},
 	onDeActive: function() {
 		$('#links_photoset').hide();
