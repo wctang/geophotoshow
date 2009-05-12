@@ -535,75 +535,7 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 		mod_ctl.switchTo($(this).attr('id').replace(/_switch/,''));
 	});
 
-
-	$('#geotag_upload_file_clear').click(function() {
-		mod_ctl.getModCtl('geotag').hideGPX(true);
-		return false;
-	});
-	$('#geotag_upload_file_preview').click(function() {
-		ui_ctl.beginLoading();
-		$('#geotag_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.geotag_parse_upload_gpx').submit();
-		return false;
-	});
-	window.geotag_parse_upload_gpx = function(rsp) {
-		try {
-			if (!mod_ctl) return;
-
-			if (rsp.stat !== 'ok') {
-				ui_ctl.on_error(rsp.message);
-			} else {
-				mod_ctl.getModCtl('geotag').showGPX(rsp.gpx);
-			}
-		} finally {
-			ui_ctl.endLoading();
-		}
-	};
-
-
-//	$('#phoset_upload_file_clear').click(function() {
-//		mod_ctl.getModCtl('phoset').hideGPX(true);
-//		return false;
-//	});
-//	$('#phoset_upload_file_preview').click(function() {
-//		ui_ctl.beginLoading();
-//		$('#phoset_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.phoset_gpx_preview').submit();
-//		return false;
-//	});
-//	window.phoset_gpx_preview = function(rsp) {
-//		try {
-//			if (!mod_ctl) return;
-//
-//			if (rsp.stat !== 'ok') {
-//				ui_ctl.on_error(rsp.message);
-//			} else {
-//				mod_ctl.getModCtl('phoset').showGPX(rsp.gpx);
-//			}
-//		} finally {
-//			ui_ctl.endLoading();
-//		}
-//	};
-//
-//	$('#phoset_upload_file_save').click(function() {
-//		ui_ctl.beginLoading();
-//		$('#phoset_upload_file_form').attr('action','/gpxupload/save?cb=window.parent.phoset_gpx_save').submit();
-//		return false;
-//	});
-//	window.phoset_gpx_save = function(rsp) {
-//		try {
-//		} finally {
-//			ui_ctl.endLoading();
-//		}
-//	};
-
-
 	settings_ctl._init();
-
-	if (/^#ll=([\-\d\,\.]+)&z=(\d+)(.*)$/.exec(location.hash)) {
-		var params = RegExp.$3;
-		if (/mod=([a-z]+)/.exec(params))  settings_ctl.mode = RegExp.$1;
-		if (/sort=([a-z]+)/.exec(params)) settings_ctl.browse_sortby = RegExp.$1;
-		if (/perpage=(\d+)/.exec(params)) settings_ctl.browse_perpage = RegExp.$1;
-	}
 
 	ui_ctl.setSettings(settings_ctl);
 

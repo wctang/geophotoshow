@@ -268,6 +268,13 @@ settings_ctl = {
 		$.each(sett, function(k,v) {
 			settings_ctl[k] = v;
 		});
+
+		if (/^#ll=([\-\d\,\.]+)&z=(\d+)(.*)$/.exec(location.hash)) {
+			var params = RegExp.$3;
+			if (/mod=([a-z]+)/.exec(params))  settings_ctl.mode = RegExp.$1;
+			if (/sort=([a-z]+)/.exec(params)) settings_ctl.browse_sortby = RegExp.$1;
+			if (/perpage=(\d+)/.exec(params)) settings_ctl.browse_perpage = RegExp.$1;
+		}
 	},
 
 	_save: function() {
@@ -713,7 +720,7 @@ var browse_ctl = {
 	__timestamp: null,
 	_center: null,
 
-	preinit: function() {
+	create: function() {
 		$('<a id="browse_switch" href="javascript:void(0)">Browse</a>').appendTo('.switch');
 
 		var ss = 
@@ -752,7 +759,7 @@ var browse_ctl = {
 			'</div>'+
 			'<div id="browse_photolist" class="photolist" style="top:18.5em;"></div>'+
 		'</div>';
-	  $(ss).appendTo('#tabs');
+		$(ss).appendTo('#tabs');
 	},
 
 	init: function() {
@@ -847,7 +854,7 @@ var browse_ctl = {
 
 		if (!user) return;
 
-		flickr.contacts.getList( {user_id:user.nsid}, function(rsp, params, api) {
+		flickr.contacts.getList({user_id:user.nsid}, function(rsp, params, api) {
 			if (!rsp) return;
 
 			var $sel = $('#contact_optgroup');
@@ -1055,7 +1062,7 @@ var geotag_ctl = {
 	curr_gpx: [],
 	curr_marker: null,
 
-	preinit: function() {
+	create: function() {
 		if (!user) return;
 
 		$('<a id="geotag_switch" href="javascript:void(0)">GeoTagging</a>').appendTo('.switch');
@@ -1137,7 +1144,7 @@ var geotag_ctl = {
 		$('#geotag_set_location').click(function() {
 			if (!confirm("Save Location?")) return;
 
-			$focus = $('#focus');
+			var $focus = $('#focus');
 			var ll = parseInt($focus.css('left'),10);
 			var tt = parseInt($focus.css('top'),10);
 
@@ -1291,6 +1298,65 @@ var geotag_ctl = {
 			}
 			}
 		});
+		
+		$('#geotag_upload_file_clear').click(function() {
+			geotag_ctl.hideGPX(true);
+			return false;
+		});
+		$('#geotag_upload_file_preview').click(function() {
+			ui_ctl.beginLoading();
+			$('#geotag_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.geotag_parse_upload_gpx').submit();
+			return false;
+		});
+		window.geotag_parse_upload_gpx = function(rsp) {
+			try {
+				if (!mod_ctl) return;
+	
+				if (rsp.stat !== 'ok') {
+					ui_ctl.on_error(rsp.message);
+				} else {
+					geotag_ctl.showGPX(rsp.gpx);
+				}
+			} finally {
+				ui_ctl.endLoading();
+			}
+		};
+
+//	$('#phoset_upload_file_clear').click(function() {
+//		mod_ctl.getModCtl('phoset').hideGPX(true);
+//		return false;
+//	});
+//	$('#phoset_upload_file_preview').click(function() {
+//		ui_ctl.beginLoading();
+//		$('#phoset_upload_file_form').attr('action','/gpxupload/preview?cb=window.parent.phoset_gpx_preview').submit();
+//		return false;
+//	});
+//	window.phoset_gpx_preview = function(rsp) {
+//		try {
+//			if (!mod_ctl) return;
+//
+//			if (rsp.stat !== 'ok') {
+//				ui_ctl.on_error(rsp.message);
+//			} else {
+//				mod_ctl.getModCtl('phoset').showGPX(rsp.gpx);
+//			}
+//		} finally {
+//			ui_ctl.endLoading();
+//		}
+//	};
+//
+//	$('#phoset_upload_file_save').click(function() {
+//		ui_ctl.beginLoading();
+//		$('#phoset_upload_file_form').attr('action','/gpxupload/save?cb=window.parent.phoset_gpx_save').submit();
+//		return false;
+//	});
+//	window.phoset_gpx_save = function(rsp) {
+//		try {
+//		} finally {
+//			ui_ctl.endLoading();
+//		}
+//	};
+
 	},
 	hideCurrMarker: function(is_clear) {
 		if (geotag_ctl.curr_marker)
@@ -1444,7 +1510,7 @@ var phoset_ctl = {
 	curr_gpx: [],
 	__markers: [],
 
-	preinit: function() {
+	create: function() {
 		if (!user) return;
 
 		$('<a id="phoset_switch" href="javascript:void(0)">Photoset</a>').appendTo('.switch');
@@ -1658,7 +1724,7 @@ var show_ctl = {
 	curr_photo_list: null,
 	_markers: [],
 
-	preinit: function() {
+	create: function() {
 		$(
 		'<div id="show_tab" class="tab">'+
 			'<div id="show_photolist" class="photolist" style="top:.5em;"></div>'+
@@ -1847,7 +1913,7 @@ mod_ctl = {
 	getCurrentModCtl: function() { return this.mods[this.last_mod]; },
 	init: function(mods) {
 		$.each(mods, function(k,v) {
-			mod_ctl.mods[v].preinit();
+			mod_ctl.mods[v].create();
 		});
 	},
 	switchTo: function(mod) {
