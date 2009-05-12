@@ -760,6 +760,16 @@ var browse_ctl = {
 		'</div>';
 		$(ss).appendTo('#tabs');
 
+		$('<a id="links_currentmap" target="_blank" style="display:none;"><img class="link" src="/images/transparent.png"/>Link to this map</a>').appendTo('span.links');
+		$('<div id="links_currentmap_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">'+
+			'<img class="close" src="/images/transparent.png" style="float:right;"/>'+
+			'<div>Copy and paste the URL below:<br/>'+
+			'<input id="links_currentmap_url" type="text" tabindex="400" style="width:29em;"/></div>'+
+		'</div>').appendTo('#mainbar');
+		$('#links_currentmap_panel .close').click(function(){ $(this.parentNode).hide(); });
+		$('#links_currentmap_panel input').click(function(){ this.select(); });
+
+		// load setting
 		$('#browse_perpage').find('span').attr('class', 'perpage_num');
 		$('#browse_perpage_'+settings_ctl.browse_perpage).attr('class', 'perpage_curr');
 		$('#browse_viewas').find('span').attr('class', 'viewas_type');
@@ -837,11 +847,13 @@ var browse_ctl = {
 				$('#browse_taglist').find('span').attr('class', 'tag');
 				e.target.className = 'tag_curr';
 				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
+				browse_ctl.refreshLinks();
 				break;
 			}
 			case 'SPAN:taglist_clear': {
 				$('#browse_taglist').find('span').attr('class', 'tag');
 				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
+				browse_ctl.refreshLinks();
 				break;
 			}
 
@@ -927,7 +939,8 @@ var browse_ctl = {
 				gmap.addOverlay(marker);
 			});
 		} finally {
-			browse_ctl.refreshLinks(true);
+			$('.popup_panel').hide();
+			browse_ctl.refreshLinks();
 			ui_ctl.endLoading();
 		}
 	},
@@ -1012,14 +1025,15 @@ var browse_ctl = {
 	onRefreshClick: function() {
 		browse_ctl.refreshPhotoGroup({page:1, no_delay:true, updatepos:true});
 	},
-	refreshLinks:function(is_reset) {
-		$('.popup_panel').hide();
-		if (!is_reset) return;
-
+	refreshLinks:function() {
 		var c = gmap.getCenter().toUrlValue();
 		var z = gmap.getZoom();
-
-		$('#links_currentmap').attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page).show();
+		var $tag_curr = $('#browse_taglist').find('.tag_curr');
+		if ($tag_curr.size() > 0) {
+			$('#links_currentmap').attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&tag='+encodeURIComponent($tag_curr.text())+'&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page).show();
+		} else {
+			$('#links_currentmap').attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page).show();
+		}
 	},
 	onMapDragend: function() {
 		ui_ctl.savePosition();
@@ -1113,6 +1127,7 @@ var geotag_ctl = {
 			'<div id="geotag_photolist" class="photolist" style="top:8em;"></div>'+
 		'</div>').appendTo('#tabs');
 
+		// load setting
 		$('#geotag_perpage').find('span').attr('class', 'perpage_num');
 		$('#geotag_perpage_'+settings_ctl.geotag_perpage).attr('class', 'perpage_curr');
 		$('#geotag_viewas').find('span').attr('class', 'viewas_type');
@@ -1541,6 +1556,18 @@ var phoset_ctl = {
 			'<div id="phoset_photolist" class="photolist" style="top:4em;"></div>'+
 		'</div>').appendTo('#tabs');
 
+		$('<a id="links_photoset" style="display:none;"><img class="link" src="/images/transparent.png"/>Link</a>').appendTo('span.links');
+		$('<div id="links_photoset_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">'+
+			'<img class="close" src="/images/transparent.png" style="float:right;"/>'+
+			'<div>Paste link in <b>email</b> or <b>IM</b><br/>'+
+			'<input id="links_photoset_url" type="text" tabindex="400" style="width:29em;"/></div>'+
+			'<div>Paste HTML to embed in website<br/>'+
+			'<input id="links_photoset_html" type="text" tabindex="401" style="width:29em;"/></div>'+
+		'</div>').appendTo('#mainbar');
+		$('#links_photoset_panel .close').click(function(){ $(this.parentNode).hide(); });
+		$('#links_photoset_panel input').click(function(){ this.select(); });
+
+		// load setting
 		$('#phoset_viewas').find('span').attr('class', 'viewas_type');
 		$('#phoset_viewas_'+settings_ctl.phoset_viewas).attr('class', 'viewas_curr');
 	},

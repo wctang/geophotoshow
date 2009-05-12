@@ -157,21 +157,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 <div id="content">
   <div id="mainbar" class="bar" style="background-color:#D5DDF3;">
     <span class="links">
-      <a id="links_currentmap" target="_blank" style="display:none;"><img class="link" src="/images/transparent.png"/>Link to this map</a>
-      <a id="links_photoset" style="display:none;"><img class="link" src="/images/transparent.png"/>Link</a>
     </span>
-    <div id="links_currentmap_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">
-      <img class="close" src="/images/transparent.png" style="float:right;"/>
-      <div>Copy and paste the URL below:<br/>
-      <input id="links_currentmap_url" type="text" tabindex="400" style="width:29em;"/></div>
-    </div>
-    <div id="links_photoset_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">
-      <img class="close" src="/images/transparent.png" style="float:right;"/>
-      <div>Paste link in <b>email</b> or <b>IM</b><br/>
-      <input id="links_photoset_url" type="text" tabindex="400" style="width:29em;"/></div>
-      <div>Paste HTML to embed in website<br/>
-      <input id="links_photoset_html" type="text" tabindex="401" style="width:29em;"/></div>
-    </div>
   </div>
   <div id="map"></div>
   <div class="sd sdh"><div class="h1 o1"></div><div class="h2 o2"></div><div class="h3 o3"></div><div class="h4 o4"></div><div class="h5 o5"></div></div>
@@ -261,8 +247,6 @@ ui_ctl = {
 		$('#panel_toggle').children('img').attr('class', (panelexp?'col':'exp'));
 
 		$('.popup_panel').hide();
-		$('.popup_panel .close').click(function(){ $(this.parentNode).hide(); });
-		$('.popup_panel input').click(function(){ this.select(); });
 
 		if (gmap) gmap.checkResize();
 
