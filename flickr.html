@@ -61,6 +61,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 .switch a { padding:0 5px; border-right:1px solid gray; border-left:1px solid gray; }
 .switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:default; }
 #mainbar span { float:right; padding-right:2em; }
+#mainbar span.links a { padding:0 5px; }
 
 #tabs { position:relative; font-size:80%; background-color:white; }
 .tab { position:absolute; top:6px; left:6px; bottom:6px; right:6px; overflow:hidden; display:none; }
@@ -140,9 +141,9 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
   <a href="/flickr/login">Sign in <img src="/images/icon_flickr.gif"/></a>
 {% endif %}
 <!--
-  | <a target="_blank" href="http://docs.google.com/View?docID=dxtw5pn_11328mg6dg9">Help</a> | <a href="http://groups.google.com/group/geophotoshow">Bug report</a>
+  | <a href="http://groups.google.com/group/geophotoshow">Bug report</a>
 -->
-  | <a target="_blank" href="http://wiki.github.com/wctang/geophotoshow">About</a>
+  | <a target="_blank" href="http://docs.google.com/View?docID=dxtw5pn_11328mg6dg9">Help</a> | <a target="_blank" href="http://wiki.github.com/wctang/geophotoshow">About</a>
 </div>
 
 <div id="header">
@@ -391,8 +392,11 @@ ui_ctl = {
 };
 </script>
 
-<script type="text/javascript" src="http://maps.google.com/maps?file=api&amp;v=2.x&amp;key=ABQIAAAA5iyLqLpUbk1qBe2volmsqxSGaeOUwwPiRwprcQIp1asxXaPRShRiXXnXJ0iaG0Cp007xopXguZyRPQ"></script>
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAA5iyLqLpUbk1qBe2volmsqxSGaeOUwwPiRwprcQIp1asxXaPRShRiXXnXJ0iaG0Cp007xopXguZyRPQ"></script>
 <script type="text/javascript">
+google.load("maps", "2.x");
+google.setOnLoadCallback(function() {
+
 function getwins() {
 	if(document.innerWidth)
 		return [document.innerWidth, document.innerHeight];
@@ -522,6 +526,8 @@ loadjs("/scripts/flickr-maps.js", function() {
 loadjs('http://www.google-analytics.com/ga.js', function() {
 	an_loaded = true;
 	init();
+});
+
 });
 </script>
 </body>

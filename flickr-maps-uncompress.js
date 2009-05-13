@@ -760,7 +760,37 @@ var browse_ctl = {
 		'</div>';
 		$(ss).appendTo('#tabs');
 
-		$('<a id="links_currentmap" target="_blank" style="display:none;"><img class="link" src="/images/transparent.png"/>Link to this map</a>').appendTo('span.links');
+		if (navigator.geolocation || (google.loader && google.loader.ClientLocation)) {
+			$('<a id="links_findmylocation" href="javascript:void(0)" style="display:none;">Find my location</a>')
+				.appendTo('span.links')
+				.click(function() { try {
+					function jumpto(lat, lng, acc) {
+						if (!acc) acc = 10;
+						gmap.setCenter(new GLatLng(lat, lng), acc);
+					}
+					if (navigator.geolocation) {
+						var that = this;
+						if (that.loc) {
+							jumpto(that.loc[0], that.loc[1], that.loc[2]);
+						} else {
+							navigator.geolocation.getCurrentPosition(function (position) {
+								that.loc = [parseFloat(position.coords.latitude), parseFloat(position.coords.longitude), 8];
+								// TODO should check position.coords.accuracy
+								jumpto(that.loc[0], that.loc[1], that.loc[2]);
+							});
+						}
+					} else if (google.loader && google.loader.ClientLocation) {
+						jumpto(parseFloat(google.loader.ClientLocation.latitude), parseFloat(google.loader.ClientLocation.longitude), 8);
+					}
+				} finally { return false; }});
+		}
+
+		$('<a id="links_currentmap" target="_blank" style="display:none;"><img class="link" src="/images/transparent.png"/>Link to this map</a>')
+			.appendTo('span.links')
+			.click(function() { try {
+				$('#links_currentmap_url').val(this.href);
+				$('#links_currentmap_panel').show();
+			} finally { return false; }});
 		$('<div id="links_currentmap_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">'+
 			'<img class="close" src="/images/transparent.png" style="float:right;"/>'+
 			'<div>Copy and paste the URL below:<br/>'+
@@ -789,15 +819,6 @@ var browse_ctl = {
 
 		$('#browse_type').change(refresh);
 		$('#browse_query').submit(refresh);
-
-		$('#links_currentmap').click(function() {
-			try {
-				$('#links_currentmap_url').val(this.href);
-				$('#links_currentmap_panel').show();
-			} finally {
-				return false;
-			}
-		});
 
 		$('#browse_tab').click(function(e) {
 			var clickon = e.target.tagName+':'+e.target.className;
@@ -1030,9 +1051,9 @@ var browse_ctl = {
 		var z = gmap.getZoom();
 		var $tag_curr = $('#browse_taglist').find('.tag_curr');
 		if ($tag_curr.size() > 0) {
-			$('#links_currentmap').attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&tag='+encodeURIComponent($tag_curr.text())+'&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page).show();
+			$('#links_currentmap').attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&tag='+encodeURIComponent($tag_curr.text())+'&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page);
 		} else {
-			$('#links_currentmap').attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page).show();
+			$('#links_currentmap').attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page);
 		}
 	},
 	onMapDragend: function() {
@@ -1057,6 +1078,8 @@ var browse_ctl = {
 		ui_ctl._showFocus();
 		ui_ctl._showRange();
 		ui_ctl._showRefreshControl();
+		$('#links_findmylocation').show();
+		$('#links_currentmap').show();
 		browse_ctl.refreshLinks();
 
 		this.refreshPhotoGroup({no_delay:true, updatepos:true});
@@ -1065,6 +1088,7 @@ var browse_ctl = {
 		ui_ctl._hideFocus();
 		ui_ctl._hideRange();
 		ui_ctl._hideRefreshControl();
+		$('#links_findmylocation').hide();
 		$('#links_currentmap').hide();
 		this.clearGroupMarker();
 	}
