@@ -844,7 +844,7 @@ var browse_ctl = {
 			}
 			case 'SPAN:perpage_num': {
 				$('#browse_perpage').find('span').attr('class', 'perpage_num');
-				settings_ctl.browse_perpage = $(e.target).attr('class', 'perpage_curr').attr('id').replace('browse_perpage_', '');
+				settings_ctl.browse_perpage = $(e.target).attr('class', 'perpage_curr').attr('id').replace(/browse_perpage_/, '');
 				settings_ctl._save();
 				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
 				break;
@@ -1297,7 +1297,7 @@ var geotag_ctl = {
 			}
 			case 'SPAN:perpage_num': {
 				$('#geotag_perpage').find('span').attr('class', 'perpage_num');
-				settings_ctl.geotag_perpage = $(e.target).attr('class', 'perpage_curr').attr('id').replace('geotag_perpage_', '');
+				settings_ctl.geotag_perpage = $(e.target).attr('class', 'perpage_curr').attr('id').replace(/geotag_perpage_/, '');
 				settings_ctl._save();
 				geotag_ctl.refreshPhotoList({page:1});
 				break;

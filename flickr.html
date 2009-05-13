@@ -67,23 +67,23 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 .tab { position:absolute; top:6px; left:6px; bottom:6px; right:6px; overflow:hidden; display:none; }
 .tab .tabrow { line-height: 2em; }
 
-.pager_dots { margin-right:3px;                  color:#808185; }
+.pager_dots { margin-right:3px;                  color:#808185; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
 .pager_prev,
-.pager_next { margin-right:3px; padding:3px 3px; color:#808185; cursor:pointer; }
+.pager_next { margin-right:3px; padding:3px 3px; color:#808185; cursor:pointer; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
 .pager_prev:hover,
-.pager_next:hover { background-color:lightblue; }
+.pager_next:hover { background-color:lightblue; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
 .pager_num,
 .perpage_num,
 .viewas_type,
-.sortby_type { margin-right:3px; padding:2px 4px; color:#808185; border:1px solid #CCCCCC; cursor:pointer; }
+.sortby_type { margin-right:3px; padding:2px 4px; color:#808185; border:1px solid #CCCCCC; cursor:pointer; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
 .pager_num:hover,
 .perpage_num:hover,
 .viewas_type:hover,
-.sortby_type:hover { background-color:lightblue; }
+.sortby_type:hover { background-color:lightblue; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
 .pager_curr,
 .perpage_curr,
 .viewas_curr,
-.sortby_curr { margin-right:3px; padding:2px 4px; color:white;   border:1px solid #808185; background-color:#808185; font-weight:bold; cursor:default; }
+.sortby_curr { margin-right:3px; padding:2px 4px; color:white;   border:1px solid #808185; background-color:#808185; font-weight:bold; cursor:default; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
 
 .taglist { position:absolute; left:0; right:0; overflow-x:hidden; overflow-y:auto; }
 .taglist div { width:420px; font-size:100%; line-height:1.5em; }
@@ -454,7 +454,6 @@ if (jq_loaded && jq_notrun) {
 	// http://dev.jquery.com/browser/trunk/plugins/cookie/jquery.cookie.min.js r6165
 	jQuery.cookie=function(name,value,options){if(typeof value!='undefined'){options=options||{};if(value===null){value='';options=$.extend({},options);options.expires=-1;}var expires='';if(options.expires&&(typeof options.expires=='number'||options.expires.toUTCString)){var date;if(typeof options.expires=='number'){date=new Date();date.setTime(date.getTime()+(options.expires*24*60*60*1000));}else{date=options.expires;}expires='; expires='+date.toUTCString();}var path=options.path?'; path='+(options.path):'';var domain=options.domain?'; domain='+(options.domain):'';var secure=options.secure?'; secure':'';document.cookie=[name,'=',encodeURIComponent(value),expires,path,domain,secure].join('');}else{var cookieValue=null;if(document.cookie&&document.cookie!=''){var cookies=document.cookie.split(';');for(var i=0;i<cookies.length;i++){var cookie=jQuery.trim(cookies[i]);if(cookie.substring(0,name.length+1)==(name+'=')){cookieValue=decodeURIComponent(cookie.substring(name.length+1));break;}}}return cookieValue;}};
 
-	ui_ctl.onResize();
 	$(window).resize(ui_ctl.onResize);
 
 	$('#panel_toggle').click(function() {
@@ -488,6 +487,8 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 	showpanel_ctl.init();
 
 	mod_ctl.switchTo('browse');
+
+	ui_ctl.onResize();
 
 	if (user) {
 		$.cookie('autologin', 'true', {expires:365});
