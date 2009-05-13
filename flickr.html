@@ -308,6 +308,11 @@ ui_ctl = {
 		this._onResize();
 		this._hideFocus();
 		this._hideRange();
+
+
+		$(".switch a").click(function(){
+			mod_ctl.switchTo($(this).attr('id').replace(/_switch/,''));
+		});
 	},
 
 	_showRefreshControl: function() {
@@ -474,14 +479,9 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 
 	settings_ctl._init();
 
-	mod_ctl.getModCtl('common').init();
-	mod_ctl.init(['browse','geotag','phoset']);
+	mod_ctl.init(['common','browse','geotag','phoset']);
 	ui_ctl.init();
 	showpanel_ctl.init();
-
-	$(".switch a").click(function(){
-		mod_ctl.switchTo($(this).attr('id').replace(/_switch/,''));
-	});
 
 	mod_ctl.switchTo('browse');
 

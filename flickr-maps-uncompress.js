@@ -437,7 +437,7 @@ var common_ctl = {
 		0.0000494593408794467,
 		0.0000247296704397233],
 
-	init: function() {
+	create: function() {
 		if (!gmap) return;
 		GEvent.addListener(gmap, "dragend", common_ctl.onMapDragend);
 		GEvent.addListener(gmap, "zoomend", common_ctl.onMapZoomend);
