@@ -959,6 +959,9 @@ var browse_ctl = {
 				browse_ctl.__markers.push(marker);
 				gmap.addOverlay(marker);
 			});
+
+			browse_ctl.curr_photo_list = photos;
+			browse_ctl.fillPhotoList();
 		} finally {
 			$('.popup_panel').hide();
 			browse_ctl.refreshLinks();
