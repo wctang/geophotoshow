@@ -38,19 +38,15 @@ FlickrPhoto.prototype = {
 	getMediumUrl: function() { return 'http://farm'+this.frm+'.static.flickr.com/'+this.srv+'/'+this.id+'_'+this.sec+'.jpg'; }, //max500
 	getLargeUrl: function() { return 'http://farm'+this.frm+'.static.flickr.com/'+this.srv+'/'+this.id+'_'+this.sec+'_b.jpg'; }, //max1024
 	getFitUrl: function(w, h) {
-		if ((w > 1024 && h > 1024) ||
-		    (this.w >= this.h && w > 1024 && (w*this.h/this.w) < h) ||
-		    (this.w < this.h && h > 1024 && (h*this.w/this.h) < w))
+		if ((w > 1024 && h > 1024) || (this.w >= this.h && w > 1024 && (w*this.h/this.w) < h) || (this.w < this.h && h > 1024 && (h*this.w/this.h) < w)) {
 			return this.getLargeUrl();
-		if ((w > 500 && h > 500) ||
-		    (this.w >= this.h && w > 500 && (w*this.h/this.w) < h) ||
-		    (this.w < this.h && h > 500 && (h*this.w/this.h) < w))
+		} else if ((w > 500 && h > 500) || (this.w >= this.h && w > 500 && (w*this.h/this.w) < h) || (this.w < this.h && h > 500 && (h*this.w/this.h) < w)) {
 			return this.getMediumUrl();
-		if ((w > 240 && h > 240) ||
-		    (this.w >= this.h && w > 240 && (w*this.h/this.w) < h) ||
-		    (this.w < this.h && h > 240 && (h*this.w/this.h) < w))
+		} else if ((w > 240 && h > 240) || (this.w >= this.h && w > 240 && (w*this.h/this.w) < h) || (this.w < this.h && h > 240 && (h*this.w/this.h) < w)) {
 			return this.getSmallUrl();
-		return this.getThumbUrl();
+		} else {
+			return this.getThumbUrl();
+		}
 	},
 	getPageUrl: function() { return 'http://www.flickr.com/photo.gne?id='+this.id; },
 	getOwnerName: function() { return this.on; },
@@ -291,56 +287,95 @@ settings_ctl = {
 	}
 };
 
-
+//
+// a show module plugin
+// xxx = {
+// init: function() {},
+// showPhoto: function(p) {}
+// }
+// and set to mod_ctl.showmode
+//
 showpanel_ctl = {
 	streetviewClient: new GStreetviewClient(),
 	photo_gmap: null,
-	_is_autoresize: false,
 
 	init: function() {
-		$('#showpanel').find('img.close').click(function() { ui_ctl.hideShowPanel(); });
+		var $p = $(
+		'<div id="showpanel" style="position:absolute; top:0; bottom:0; left:0; right:0; background-color:white; z-index:1; display:none;">'+
+			'<div class="bar" style="background-color:#D5DDF3;">'+
+				'<img class="close" src="/images/transparent.png" style="float:right; margin:5px 10px;"/>'+
+				'<span id="showpanel_switch" style="float:right;">'+
+					'<a id="showpanel_switch_photo" href="javascript:void(0)">Photo</a> | '+
+					'<a id="showpanel_switch_map" href="javascript:void(0)">Map</a> | '+
+					'<a id="showpanel_switch_streetview" href="javascript:void(0)">Street View</a>'+
+				'</span>'+
+			'</div>'+
+			'<div id="showpanel_content" style="position:absolute; top:27px; bottom:0; right:0; left:0; overflow:auto;">'+
+				'<div style="margin:auto; width:500px; padding:3px 0 10px 0;">'+
+					'<h1><a class="title" target="_blank"></a></h1>'+
+					'<div style="margin-top:1em;">'+
+						'<a class="buddyurl" target="_blank"><img class="buddy" style="width:48px; height:48px; background:transparent url(/images/loading.gif);"></img></a>'+
+						'<span>From <a class="owner" target="_blank"></a></span><br/>'+
+						'<span>Posted on <a class="uploaddate" target="_blank"></a>, Taken on <a class="takendate" target="_blank"></a></span>'+
+					'</div>'+
+					'<div style="margin-top:2em;">'+
+						'<div id="showpanel_tab_photo" class="showpanel_tab" style="position:absolute; width:300; height:300px; background:transparent url(/images/loading.gif) no-repeat center;">'+
+							'<img class="photo"/>'+
+						'</div>'+
+						'<div id="showpanel_tab_map" class="showpanel_tab" style="position:absolute;">'+
+							'<div id="photomap"></div>'+
+						'</div>'+
+						'<div id="showpanel_tab_streetview" class="showpanel_tab" style="position:absolute;">'+
+							'<div id="panorama_ctnr"></div>'+
+						'</div>'+
+					'</div>'+
+				'</div>'+
+			'</div>'+
+		'</div>');
+		
+		$p.find('img.close').click(function() { showpanel_ctl.hide(); });
 
-		$('#showpanel_switch a').click(function() {
+		$p.find('#showpanel_switch a').click(function() {
 			var tab = $(this).attr('id').replace(/showpanel_switch_/,'');
-			$('#showpanel_switch a').removeClass('sel');
-			$('#showpanel_switch_'+tab).addClass('sel');
-
-			$('.showpanel_tab').css( {'left':-1000});
-			$('#showpanel_tab_'+tab).css( {'left':0});
-
 			showpanel_ctl.showpanelSwitchTo(tab);
 		});
-	},
-	setAutoResize: function(b) {
-		this._is_autoresize = b;
+		gmap.getContainer().appendChild($p.get(0));
 	},
 	showPhoto: function(p) {
-		$('#showpanel_switch_photo').click();
+		showpanel_ctl.showpanelSwitchTo('photo');
+
 		var $sp = $('#showpanel');
-		$sp.find('.photo').attr('src','/images/transparent.png').end()
-			.find('.title').attr('href',p.getPageUrl()).text(p.getTitle()).end()
+		$sp.find('.title').attr('href',p.getPageUrl()).text(p.getTitle()).end()
 			.find('.buddyurl').attr('href',p.getOwnerUrl()).end()
-			.find('.buddy').attr('src',p.getBuddyiconUrl()).end()
+			.find('.buddy').attr('src','/images/transparent.png').end()
 			.find('.owner').attr('href',p.getOwnerUrl()).text(p.getOwnerName()).end()
 			.find('.uploaddate').attr('href',p.getUploadDateUrl()).text(p.getUploadDateStr()).end()
-			.find('.takendate').attr('href',p.getTakenDateUrl()).text(p.getTakenDateStr());
+			.find('.takendate').attr('href',p.getTakenDateUrl()).text(p.getTakenDateStr()).end()
+			.find('.photo').fadeOut('fast');
+
+		$('#showpanel .buddy').get(0).url = p.getBuddyiconUrl();
+		var buddyicon = new Image();
+		buddyicon.onload = function() {
+			var $sp = $('#showpanel .buddy');
+			if (this.src === $sp.get(0).url) {
+				$sp.attr('src',this.src);
+			}
+		};
+		buddyicon.src = p.getBuddyiconUrl();
+
+		$('#showpanel .photo').get(0).url = p.getMediumUrl();
+		var mainphoto = new Image();
+		mainphoto.onload = function() {
+			var $sp = $('#showpanel .photo');
+			if (this.src === $sp.get(0).url) {
+				$('#showpanel_tab_photo').css({width:this.width, height:this.height});
+				$sp.attr('src',this.src).stop(true, true).fadeIn('fast');
+			}
+		};
+		mainphoto.src = p.getMediumUrl();
 
 		$('#showpanel_content').get(0).scrollTop = 0;
 
-		ui_ctl.showShowPanel();
-
-		if (this._is_autoresize) {
-			var $s = $('#showpanel_content');
-			var w = $s.width();
-			var h = $s.height();
-			if (w > 500 && h > 500) {
-				$sp.find('.photo').attr('src',p.getMediumUrl());
-			} else {
-				$sp.find('.photo').attr('src',p.getFitUrl(w, h));
-			}
-		} else {
-			$sp.find('.photo').attr('src',p.getMediumUrl());
-		}
 
 		$('#showpanel_switch_streetview').hide();
 
@@ -357,28 +392,27 @@ showpanel_ctl = {
 				});
 			}
 		}
+
+		$sp.fadeIn('fast');
+		gmap.disableScrollWheelZoom();
+	},
+	hide: function() {
+		$('#showpanel').fadeOut('fast').find('.photo').hide();
+		gmap.enableScrollWheelZoom();
 	},
 	showpanelSwitchTo: function(tab) {
+		$('#showpanel_switch a').removeClass('sel');
+		$('#showpanel_switch_'+tab).addClass('sel');
+		$('.showpanel_tab').css({'position':'absolute', 'top':-1000});
+		$('#showpanel_tab_'+tab).css({'position':'inherit', 'top':0, 'margin':'auto'});
+
 		var ww = 500, hh = 350;
-		if (this._is_autoresize) {
-			var $s = $('#showpanel_content');
-			var w = $s.width();
-			var h = $s.height();
-			if (w-10 < ww) ww = w-10;
-			if (h-20 < hh) hh = h-20;
-		}
 		switch (tab) {
 		case 'photo':
 			break;
 		case 'map': {
 			var p = $('#showpanel_switch_map').get(0).p;
 			if (!p) return;
-
-			if (this._is_autoresize) {
-				var $s = $('#showpanel_content');
-				var w = $s.width();
-				var h = $s.height();
-			}
 
 			$('#photomap').css({width:ww, height:hh});
 
@@ -402,8 +436,8 @@ showpanel_ctl = {
 			if (!loc) return;
 
 			$('#panorama_ctnr').empty();
-			var $ctnr = $('<div id="panorama_show" style="width:'+ww+'px; height:'+hh+'px;"></div>');
-			$('#panorama_ctnr').append($ctnr);
+			var $ctnr = $('<div id="panorama_show"></div>');
+			$ctnr.css({width:ww, height:hh}).appendTo('#panorama_ctnr');
 			new GStreetviewPanorama($ctnr.get(0), {latlng: loc.latlng, pov: loc.pov});
 			$('#showpanel_switch_streetview').get(0).location = null;
 			break;
@@ -411,6 +445,159 @@ showpanel_ctl = {
 		}
 	}
 };
+
+embedpanel_ctl = {
+	streetviewClient: new GStreetviewClient(),
+	photo_gmap: null,
+
+	init: function() {
+		var $p = $(
+		'<div id="showpanel" style="position:absolute; top:0; bottom:0; left:0; right:0; background-color:white; z-index:1; display:none;">'+
+			'<div class="bar" style="background-color:#D5DDF3;">'+
+				'<h1><a class="title" target="_blank"></a></h1>'+
+				'<img class="close" src="/images/transparent.png" style="float:right; margin:5px 20px;"/>'+
+			'</div>'+
+			'<div id="showpanel_content" style="position:absolute; top:1.7em; bottom:0; right:0; left:0; overflow:auto; margin:3px;">'+
+				'<div style="margin:auto; padding:3px 0 10px 0;">'+
+					'<div style="margin-top:1em; display:none;">'+
+						'<a class="buddyurl" target="_blank"><img class="buddy"></img></a>'+
+						'<span>From <a class="owner" target="_blank"></a></span><br/>'+
+						'<span>Posted on <a class="uploaddate" target="_blank"></a>, Taken on <a class="takendate" target="_blank"></a></span>'+
+					'</div>'+
+					'<div style="position:absolute; font-size:8pt;">'+
+						'<div class="bar">'+
+							'<span id="showpanel_switch">'+
+								'<a id="showpanel_switch_photo" href="javascript:void(0)">Photo</a>'+
+								'| <a id="showpanel_switch_map" href="javascript:void(0)">Map</a>'+
+								'| <a id="showpanel_switch_streetview" href="javascript:void(0)">Street View</a>'+
+							'</span>'+
+						'</div>'+
+						'<div id="showpanel_tab_photo" class="showpanel_tab" style="position:absolute;">'+
+							'<img class="photo"/>'+
+						'</div>'+
+						'<div id="showpanel_tab_map" class="showpanel_tab" style="position:absolute;">'+
+							'<div id="photomap"></div>'+
+						'</div>'+
+						'<div id="showpanel_tab_streetview" class="showpanel_tab" style="position:absolute;">'+
+							'<div id="panorama_ctnr"></div>'+
+						'</div>'+
+					'</div>'+
+				'</div>'+
+			'</div>'+
+		'</div>');
+
+		$p.find('img.close').click(function() { embedpanel_ctl.hide(); });
+
+		$p.find('#showpanel_switch a').click(function() {
+			var tab = $(this).attr('id').replace(/showpanel_switch_/,'');
+			embedpanel_ctl.showpanelSwitchTo(tab);
+		});
+		gmap.getContainer().appendChild($p.get(0));
+	},
+	showPhoto: function(p) {
+		embedpanel_ctl.showpanelSwitchTo('photo');
+		var $sp = $('#showpanel');
+		$sp.find('.photo').attr('src','/images/transparent.png').end()
+			.find('.title').attr('href',p.getPageUrl()).text(p.getTitle()).end()
+			.find('.buddyurl').attr('href',p.getOwnerUrl()).end()
+			.find('.buddy').attr('src',p.getBuddyiconUrl()).end()
+			.find('.owner').attr('href',p.getOwnerUrl()).text(p.getOwnerName()).end()
+			.find('.uploaddate').attr('href',p.getUploadDateUrl()).text(p.getUploadDateStr()).end()
+			.find('.takendate').attr('href',p.getTakenDateUrl()).text(p.getTakenDateStr());
+
+		$('#showpanel_content').get(0).scrollTop = 0;
+
+		$sp.fadeIn('fast');
+		gmap.disableScrollWheelZoom();
+
+		var $s = $('#showpanel_content');
+		var w = $s.width();
+		var h = $s.height();
+		if (w > 500 && h > 500) {
+			$sp.find('.photo').attr('src',p.getMediumUrl());
+		} else {
+			$sp.find('.photo').attr('src',p.getFitUrl(w, h));
+		}
+
+		$('#showpanel_switch_streetview').hide();
+
+		if (!p.hasGeo()) {
+			$('#showpanel_switch_map').hide();
+		} else {
+			$('#showpanel_switch_map').show().get(0).p = p;
+
+			if (p.acc >= 14) {
+				embedpanel_ctl.streetviewClient.getNearestPanorama(new GLatLng(p.lat,p.lng), function(response) {
+					if (response.code != 200) return;
+
+					$('#showpanel_switch_streetview').show().get(0).location = response.location;
+				});
+			}
+		}
+	},
+	hide: function() {
+		$('#showpanel').fadeOut('fast');
+		gmap.enableScrollWheelZoom();
+	},
+	showpanelSwitchTo: function(tab) {
+		$('#showpanel_switch a').removeClass('sel');
+		$('#showpanel_switch_'+tab).addClass('sel');
+
+		$('.showpanel_tab').css( {'left':-1000});
+		$('#showpanel_tab_'+tab).css( {'left':0});
+
+		var ww = 500, hh = 350;
+		var $s = $('#showpanel_content');
+		var w = $s.width();
+		var h = $s.height();
+		if (w-10 < ww) ww = w-10;
+		if (h-20 < hh) hh = h-20;
+
+		switch (tab) {
+		case 'photo':
+			break;
+		case 'map': {
+			var p = $('#showpanel_switch_map').get(0).p;
+			if (!p) return;
+
+			var $s = $('#showpanel_content');
+			var w = $s.width();
+			var h = $s.height();
+
+			$('#photomap').css({width:ww, height:hh});
+
+			if (!this.photo_gmap) {
+				this.photo_gmap = new GMap2($('#photomap').get(0));
+				this.photo_gmap.setUIToDefault();
+				this.photo_gmap.disableDoubleClickZoom();
+				this.photo_gmap.addControl(new GOverviewMapControl());
+			}
+
+			this.photo_gmap.checkResize();
+			var platlng = new GLatLng(p.lat,p.lng);
+			this.photo_gmap.setCenter(platlng, p.acc);
+			this.photo_gmap.clearOverlays();
+			this.photo_gmap.addOverlay(new GMarker(platlng));
+			$('#showpanel_switch_map').get(0).p = null;
+			break;
+		}
+		case 'streetview': {
+			var loc = $('#showpanel_switch_streetview').get(0).location;
+			if (!loc) return;
+
+			$('#panorama_ctnr').empty();
+			var $ctnr = $('<div id="panorama_show"></div>');
+			$ctnr.css({width:ww, height:hh}).appendTo('#panorama_ctnr');
+			new GStreetviewPanorama($ctnr.get(0), {latlng: loc.latlng, pov: loc.pov});
+			$('#showpanel_switch_streetview').get(0).location = null;
+			break;
+		}
+		}
+	}
+};
+
+
+
 
 
 var common_ctl = {
@@ -884,7 +1071,7 @@ var browse_ctl = {
 				var p = e.target.parentNode.parentNode.parentNode.photo;
 				if (!p) return;
 
-				showpanel_ctl.showPhoto(p);
+				mod_ctl.showmode.showPhoto(p);
 				return false;
 			}
 			}
@@ -973,7 +1160,7 @@ var browse_ctl = {
 		if (!timestamp) timestamp = browse_ctl.__timestamp = +new Date;
 		if (browse_ctl.__timestamp !== timestamp) return;
 
-		ui_ctl.hideShowPanel();
+		mod_ctl.showmode.hide();
 
 		if (!actopt.no_delay) {
 			actopt.no_delay = true;
@@ -1645,7 +1832,7 @@ var phoset_ctl = {
 				var p = e.target.parentNode.parentNode.parentNode.photo;
 				if (!p) return;
 
-				showpanel_ctl.showPhoto(p);
+				mod_ctl.showmode.showPhoto(p);
 				return false;
 			}
 			}
@@ -1812,7 +1999,7 @@ var show_ctl = {
 				var p = e.target.parentNode.parentNode.parentNode.photo;
 				if (!p) return;
 
-				showpanel_ctl.showPhoto(p);
+				mod_ctl.showmode.showPhoto(p);
 				return false;
 			}
 			}
@@ -1964,6 +2151,8 @@ var show_ctl = {
 
 mod_ctl = {
 	mods: {common:common_ctl, browse:browse_ctl, geotag:geotag_ctl, phoset:phoset_ctl, show:show_ctl},
+	shows: {showpanel:showpanel_ctl, embedpanel:embedpanel_ctl},
+	showmode: null,
 	last_mod: null,
 	getModCtl: function(mod) { return this.mods[mod]; },
 	getCurrentMod: function() { return this.last_mod; },
@@ -1972,6 +2161,15 @@ mod_ctl = {
 		$.each(mods, function(k,v) {
 			mod_ctl.mods[v].create();
 		});
+	},
+	init_show: function(mod) {
+		if (mod === 'showpanel') {
+			showpanel_ctl.init();
+			mod_ctl.showmode = showpanel_ctl;
+		} else if (mod === 'embedpanel') {
+			embedpanel_ctl.init();
+			mod_ctl.showmode = embedpanel_ctl;
+		}
 	},
 	switchTo: function(mod) {
 		if (mod === this.last_mod) return;
@@ -1990,7 +2188,7 @@ mod_ctl = {
 		$('.popup_panel').hide();
 		this.getCurrentModCtl().onActive();
 
-		ui_ctl.hideShowPanel();
+		mod_ctl.showmode.hide();
 		return this.getCurrentModCtl();
 	}
 };

@@ -163,39 +163,6 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
   <div id="map"></div>
   <div class="sd sdh"><div class="h1 o1"></div><div class="h2 o2"></div><div class="h3 o3"></div><div class="h4 o4"></div><div class="h5 o5"></div></div>
   <div class="sd sdv"><div class="v1 o1"></div><div class="v2 o2"></div><div class="v3 o3"></div><div class="v4 o4"></div><div class="v5 o5"></div></div>
-  <div id="showpanel" style="position:absolute; top:0px; background-color:white; z-index:3; display:none;">
-    <div class="bar" style="background-color:#D5DDF3;">
-      <img class="close" src="/images/transparent.png" style="float:right; margin:5px 20px;"/>
-    </div>
-    <div id="showpanel_content" style="position:absolute; top:27px; bottom:0; right:0; left:0; overflow:auto;">
-      <div style="margin:auto; width:500px; padding:3px 0 10px 0;">
-        <h1><a class="title" target="_blank"></a></h1>
-        <div style="margin-top:1em;">
-          <a class="buddyurl" target="_blank"><img class="buddy" /></a>
-          <span>From <a class="owner" target="_blank"></a></span><br/>
-          <span>Posted on <a class="uploaddate" target="_blank"></a>, Taken on <a class="takendate" target="_blank"></a></span>
-        </div>
-        <div style="margin-top:1em; position:absolute;">
-          <div class="bar">
-            <span id="showpanel_switch">
-                <a id="showpanel_switch_photo" href="javascript:void(0)">Photo</a>
-              | <a id="showpanel_switch_map" href="javascript:void(0)">Map</a>
-              | <a id="showpanel_switch_streetview" href="javascript:void(0)">Street View</a>
-            </span>
-          </div>
-          <div id="showpanel_tab_photo" class="showpanel_tab" style="position:absolute;">
-            <img class="photo"/>
-          </div>
-          <div id="showpanel_tab_map" class="showpanel_tab" style="position:absolute;">
-            <div id="photomap" style="width:500px; height:350px;"></div>
-          </div>
-          <div id="showpanel_tab_streetview" class="showpanel_tab" style="position:absolute;">
-            <div id="panorama_ctnr" style="width:500px; height:350px;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
   <div id="panel">
     <a id="panel_toggle" href="javascript:void(0)" style="position:absolute;"><img class="col" style="position:absolute; right:-1px;" src="/images/transparent.png"/></a>
     <div class="sd sdvr"><div class="v1 o1"></div><div class="v2 o2"></div><div class="v3 o3"></div><div class="v4 o4"></div><div class="v5 o5"></div></div>
@@ -209,10 +176,9 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 </div>
 
 <script type="text/javascript">
-var gmap = null, user = null, API_KEY = '{{ API_KEY }}', mod_ctl = null, showpanel_ctl = null, ui_ctl = null;
+var gmap = null, user = null, API_KEY = '{{ API_KEY }}', mod_ctl = null, ui_ctl = null;
 var settings_ctl = null;
 var panelexp = true;
-var showpanelexp = false;
 
 {% if user %}
 user = { nsid:'{{ user.nsid }}' };
@@ -224,7 +190,6 @@ ui_ctl = {
 		var w = $(window).width();
 		var $m = $('#map');
 		var $p = $('#panel');
-		var $sp = $('#showpanel');
 
 		var mw = panelexp ? w-$p.width() : w;
 		var mh = h-$m.offset().top;
@@ -242,8 +207,6 @@ ui_ctl = {
 			var pr = panelexp ? 0 : -$p.width();
 			$p.css({height:ph, right:pr});
 		}
-
-		$sp.css({height:ph, width:mw});
 
 		$('#panel_toggle').children('img').attr('class', (panelexp?'col':'exp'));
 
@@ -366,17 +329,6 @@ ui_ctl = {
 		$p.animate({right:-$p.width()}, 'fast');
 	},
 
-	showShowPanel: function() {
-		showpanelexp = true;
-		$('#showpanel').fadeIn('fast');
-		if (gmap) gmap.disableScrollWheelZoom();
-	},
-	hideShowPanel: function() {
-		showpanelexp = false;
-		$('#showpanel').fadeOut('fast');
-		if (gmap) gmap.enableScrollWheelZoom();
-	},
-
 	savePosition: function() {
 		$.cookie('currpos', gmap.getCenter().toUrlValue()+','+gmap.getZoom(), {path:'/', expires:365});
 	},
@@ -470,21 +422,11 @@ if (jq_loaded && jq_notrun) {
 if (jq_loaded && mp_loaded && mp_notrun) {
 	mp_notrun = false;
 
-// One-shot position request.
-//navigator.geolocation.getCurrentPosition(function (position) {
-//	console.log(position.coords.latitude, position.coords.longitude, position.coords.altitude, position.coords.accuracy);
-//});
-
-//var geo = google.gears.factory.create('beta.geolocation');
-//geo.getCurrentPosition(function(position) {
-//  updateMap(position.latitude, position.longitude);
-//});
-
 	settings_ctl._init();
 
 	mod_ctl.init(['common','browse','geotag','phoset']);
+	mod_ctl.init_show('showpanel');
 	ui_ctl.init();
-	showpanel_ctl.init();
 
 	mod_ctl.switchTo('browse');
 
@@ -528,6 +470,10 @@ loadjs('http://www.google-analytics.com/ga.js', function() {
 	an_loaded = true;
 	init();
 });
+
+// preload 
+var image1 = new Image();
+image1.src = '/images/loading.gif';
 
 });
 </script>
