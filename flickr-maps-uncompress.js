@@ -295,13 +295,14 @@ settings_ctl = {
 // }
 // and set to mod_ctl.showmode
 //
-showpanel_ctl = {
+var showpanel_ctl = {
 	streetviewClient: new GStreetviewClient(),
 	photo_gmap: null,
 
 	init: function() {
 		var $p = $(
-		'<div id="showpanel" style="position:absolute; top:0; bottom:0; left:0; right:0; background-color:white; z-index:1; display:none;">'+
+		'<div id="showpanel" style="position:absolute; top:0; bottom:0; left:0; right:0; z-index:1; display:none;">'+
+			'<div id="showpanel_bg" style="position:absolute; left:0; right:0; top:0; bottom:0; background-color:gray;"></div>'+
 			'<div class="bar" style="background-color:#D5DDF3;">'+
 				'<img class="close" src="/images/transparent.png" style="float:right; margin:5px 10px;"/>'+
 				'<span id="showpanel_switch" style="float:right;">'+
@@ -311,14 +312,14 @@ showpanel_ctl = {
 				'</span>'+
 			'</div>'+
 			'<div id="showpanel_content" style="position:absolute; top:27px; bottom:0; right:0; left:0; overflow:auto;">'+
-				'<div style="margin:auto; width:500px; padding:3px 0 10px 0;">'+
+				'<div style="margin:auto; width:500px; padding:10px; background-color:white;">'+
 					'<h1><a class="title" target="_blank"></a></h1>'+
 					'<div style="margin-top:1em;">'+
 						'<a class="buddyurl" target="_blank"><img class="buddy" style="width:48px; height:48px; background:transparent url(/images/loading.gif);"></img></a>'+
 						'<span>From <a class="owner" target="_blank"></a></span><br/>'+
 						'<span>Posted on <a class="uploaddate" target="_blank"></a>, Taken on <a class="takendate" target="_blank"></a></span>'+
 					'</div>'+
-					'<div style="margin-top:2em;">'+
+					'<div id="showpanel_tabs" style="margin-top:1em; position:relative; height:300px;">'+
 						'<div id="showpanel_tab_photo" class="showpanel_tab" style="position:absolute; width:300; height:300px; background:transparent url(/images/loading.gif) no-repeat center;">'+
 							'<img class="photo"/>'+
 						'</div>'+
@@ -334,6 +335,12 @@ showpanel_ctl = {
 		'</div>');
 		
 		$p.find('img.close').click(function() { showpanel_ctl.hide(); });
+		$p.find('#showpanel_content').click(function(e) {
+			if ($(e.target).attr('id') === 'showpanel_content') {
+				showpanel_ctl.hide();
+			}
+		});
+		$p.find('#showpanel_bg').css('opacity', .5);
 
 		$p.find('#showpanel_switch a').click(function() {
 			var tab = $(this).attr('id').replace(/showpanel_switch_/,'');
@@ -368,7 +375,8 @@ showpanel_ctl = {
 		mainphoto.onload = function() {
 			var $sp = $('#showpanel .photo');
 			if (this.src === $sp.get(0).url) {
-				$('#showpanel_tab_photo').css({width:this.width, height:this.height});
+				$('#showpanel_tabs').animate({height:this.height});
+				$('#showpanel_tab_photo').css({left:(500-this.width)/2, width:this.width, height:this.height});
 				$sp.attr('src',this.src).stop(true, true).fadeIn('fast');
 			}
 		};
@@ -403,14 +411,19 @@ showpanel_ctl = {
 	showpanelSwitchTo: function(tab) {
 		$('#showpanel_switch a').removeClass('sel');
 		$('#showpanel_switch_'+tab).addClass('sel');
-		$('.showpanel_tab').css({'position':'absolute', 'top':-1000});
-		$('#showpanel_tab_'+tab).css({'position':'inherit', 'top':0, 'margin':'auto'});
+		$('.showpanel_tab').css({'top':-1000});
+		$('#showpanel_tab_'+tab).css({'top':0});
 
 		var ww = 500, hh = 350;
 		switch (tab) {
 		case 'photo':
+			var ph = $('#showpanel_tab_photo').height();
+			if (ph !== 0) {
+				$('#showpanel_tabs').animate({height:ph});
+			}
 			break;
 		case 'map': {
+			$('#showpanel_tabs').animate({height:hh});
 			var p = $('#showpanel_switch_map').get(0).p;
 			if (!p) return;
 
@@ -432,6 +445,7 @@ showpanel_ctl = {
 			break;
 		}
 		case 'streetview': {
+			$('#showpanel_tabs').animate({height:hh});
 			var loc = $('#showpanel_switch_streetview').get(0).location;
 			if (!loc) return;
 
@@ -446,7 +460,7 @@ showpanel_ctl = {
 	}
 };
 
-embedpanel_ctl = {
+var embedpanel_ctl = {
 	streetviewClient: new GStreetviewClient(),
 	photo_gmap: null,
 
