@@ -269,7 +269,7 @@ function loadjs(path, cb) {
 	var jo = document.createElement('script');
 	jo.done = false;
 	jo.onload = function() { jo.done = true; cb(); };
-	jo.onreadystatechange = function() { if ('loaded' === jo.readyState && !jo.done) { jo.done = true; cb(); } };
+	jo.onreadystatechange = function() { if (('complete' === jo.readyState || 'loaded' === jo.readyState) && !jo.done) { jo.done = true; cb(); } };
 	jo.src = path;
 	document.getElementsByTagName('head')[0].appendChild(jo);
 }
@@ -287,7 +287,7 @@ loadjs('http://www.google-analytics.com/ga.js', function() {
 	init();
 });
 
-// preload 
+// preload
 var image1 = new Image();
 image1.src = '/images/loading.gif';
 

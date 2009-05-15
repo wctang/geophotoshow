@@ -91,7 +91,7 @@ var flickr = {
 		var script = document.createElement('script');
 		script.type = 'text/javascript';
 
-		var cb_id = 'flickrcb'+(flickr._callcount++);
+		var cb_id = 'flickrcb'+(+new Date)+(flickr._callcount++);
 		opts.method = methodname;
 		opts.format = 'json';
 		opts.jsoncallback = cb_id;
@@ -107,8 +107,9 @@ var flickr = {
 			}
 			window[cb_id] = undefined;
 			try { delete window[cb_id]; } catch (e) {}
-			if (head)
+			if (head) {
 				head.removeChild(script);
+			}
 		};
 
 		var req = [];
@@ -137,8 +138,9 @@ var flickr = {
 			});
 
 			script.src = 'http://flickr.com/services/rest?'+req.join('&');
-			if (head)
+			if (head) {
 				head.appendChild(script);
+			}
 		}
 	},
 
@@ -1541,7 +1543,7 @@ var geotag_ctl = {
 			}
 			}
 		});
-		
+
 		$('#geotag_upload_file_clear').click(function() {
 			geotag_ctl.hideGPX(true);
 			return false;
@@ -1554,7 +1556,7 @@ var geotag_ctl = {
 		window.geotag_parse_upload_gpx = function(rsp) {
 			try {
 				if (!mod_ctl) return;
-	
+
 				if (rsp.stat !== 'ok') {
 					ui_ctl.on_error(rsp.message);
 				} else {
@@ -1858,8 +1860,13 @@ var phoset_ctl = {
 
 		var issign = (user) ? true : false;
 		flickr.photosets.getPhotos( {photoset_id:photoset_id, page:1, per_page:200}, function(rsp, params, api) {
+			if (mod_ctl.getCurrentMod() !== 'phoset') {
+				return;
+			}
+
 			var isfinal = false;
 			try {
+
 				if (!rsp) return;
 
 				var page = api.getPage(rsp);
@@ -1882,8 +1889,9 @@ var phoset_ctl = {
 					ui_ctl.on_error('This set have no geotagged photo.');
 				}
 			} finally {
-				if (isfinal)
-				ui_ctl.endLoading();
+				if (isfinal) {
+					ui_ctl.endLoading();
+				}
 			}
 		}, issign);
 	},
