@@ -28,8 +28,14 @@ function FlickrPhoto(p) {
 	this.srv = p.server;
 	this.inf = p.iconfarm;
 	this.ins = p.iconserver;
+	if (p.media === 'video') {
+		this.med = 1;
+	} else {
+		this.med = 0;
+	}
 }
 FlickrPhoto.prototype = {
+	isVideo: function() { return this.med === 1; },
 	hasGeo: function() { return this.acc !== 0; },
 	getTitle: function() { return this.t; },
 	getIconUrl: function() { return 'http://farm'+this.frm+'.static.flickr.com/'+this.srv+'/'+this.id+'_'+this.sec+'_s.jpg'; }, //75x75
@@ -48,6 +54,7 @@ FlickrPhoto.prototype = {
 			return this.getThumbUrl();
 		}
 	},
+	getVideoUrl: function() { return 'photo_secret='+this.sec+'&photo_id='+this.id; },
 	getPageUrl: function() { return 'http://www.flickr.com/photo.gne?id='+this.id; },
 	getOwnerName: function() { return this.on; },
 	getOwnerUrl: function() { return 'http://www.flickr.com/photos/'+this.oi+'/'; },
@@ -72,7 +79,7 @@ FlickrPhoto.prototype = {
 
 
 var flickr = {
-	extras: 'geo,date_upload,date_taken,owner_name,icon_server,o_dims',
+	extras: 'geo,date_upload,date_taken,owner_name,icon_server,o_dims,media',
 	_api_key: API_KEY,
 
   //// GM Script
@@ -309,6 +316,7 @@ var showpanel_ctl = {
 				'<img class="close" src="/images/transparent.png" style="float:right; margin:5px 10px;"/>'+
 				'<span id="showpanel_switch" style="float:right;">'+
 					'<a id="showpanel_switch_photo" href="javascript:void(0)">Photo</a> | '+
+					'<a id="showpanel_switch_video" href="javascript:void(0)">Video</a> | '+
 					'<a id="showpanel_switch_map" href="javascript:void(0)">Map</a> | '+
 					'<a id="showpanel_switch_streetview" href="javascript:void(0)">Street View</a>'+
 				'</span>'+
@@ -326,6 +334,8 @@ var showpanel_ctl = {
 						'</div>'+
 						'<div id="showpanel_tab_photo" class="showpanel_tab" style="position:absolute; width:500px; height:300px; background:transparent url(/images/loading.gif) no-repeat center;">'+
 							'<img class="photo"/>'+
+						'</div>'+
+						'<div id="showpanel_tab_video" class="showpanel_tab" style="position:absolute; width:500px; height:300px; background:transparent url(/images/loading.gif) no-repeat center;">'+
 						'</div>'+
 						'<div id="showpanel_tab_map" class="showpanel_tab" style="position:absolute;">'+
 							'<div id="photomap"></div>'+
@@ -353,16 +363,13 @@ var showpanel_ctl = {
 		gmap.getContainer().appendChild($p.get(0));
 	},
 	showPhoto: function(p) {
-		showpanel_ctl.showpanelSwitchTo('photo');
-
 		var $sp = $('#showpanel');
 		$sp.find('.title').attr('href',p.getPageUrl()).text(p.getTitle()).end()
 			.find('.buddyurl').attr('href',p.getOwnerUrl()).end()
 			.find('.buddy').attr('src','/images/transparent.png').end()
 			.find('.owner').attr('href',p.getOwnerUrl()).text(p.getOwnerName()).end()
 			.find('.uploaddate').attr('href',p.getUploadDateUrl()).text(p.getUploadDateStr()).end()
-			.find('.takendate').attr('href',p.getTakenDateUrl()).text(p.getTakenDateStr()).end()
-			.find('.photo').fadeOut('fast');
+			.find('.takendate').attr('href',p.getTakenDateUrl()).text(p.getTakenDateStr());
 
 		$('#showpanel .buddy').get(0).url = p.getBuddyiconUrl();
 		var buddyicon = new Image();
@@ -374,17 +381,39 @@ var showpanel_ctl = {
 		};
 		buddyicon.src = p.getBuddyiconUrl();
 
-		$('#showpanel .photo').get(0).url = p.getMediumUrl();
-		var mainphoto = new Image();
-		mainphoto.onload = function() {
-			var $sp = $('#showpanel .photo');
-			if (this.src === $sp.get(0).url) {
-				$('#showpanel_tabs').animate({height:this.height});
-				$('#showpanel_tab_photo').css({left:(500-this.width)/2, width:this.width, height:this.height});
-				$sp.attr('src',this.src).stop(true, true).fadeIn('fast');
-			}
-		};
-		mainphoto.src = p.getMediumUrl();
+		if (p.isVideo()) {
+			$('#showpanel_switch_photo').hide();
+			$('#showpanel_switch_video').show();
+			showpanel_ctl.showpanelSwitchTo('video');
+
+			$('#showpanel_tab_video').empty().append(
+			'<object type="application/x-shockwave-flash" width="500" height="350" data="http://www.flickr.com/apps/video/stewart.swf?v=71377" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000">'+
+				'<param name="flashvars" value="'+p.getVideoUrl()+'"></param>'+
+				'<param name="movie" value="http://www.flickr.com/apps/video/stewart.swf?v=71377"></param>'+
+				'<param name="bgcolor" value="#000000"></param>'+
+				'<param name="allowFullScreen" value="true"></param>'+
+				'<embed type="application/x-shockwave-flash" src="http://www.flickr.com/apps/video/stewart.swf?v=71377" bgcolor="#000000" allowfullscreen="true" flashvars="'+p.getVideoUrl()+'" width="500" height="350">'+
+				'</embed>'+
+			'</object>');
+			$('#showpanel_tab_bg').animate({height:350});
+		} else {
+			$('#showpanel_switch_photo').show();
+			$('#showpanel_switch_video').hide();
+			showpanel_ctl.showpanelSwitchTo('photo');
+			$sp.find('.photo').fadeOut('fast');
+
+			$('#showpanel .photo').get(0).url = p.getMediumUrl();
+			var mainphoto = new Image();
+			mainphoto.onload = function() {
+				var $sp = $('#showpanel .photo');
+				if (this.src === $sp.get(0).url) {
+					$('#showpanel_tab_bg').animate({height:this.height});
+					$('#showpanel_tab_photo').css({left:(500-this.width)/2, width:this.width, height:this.height});
+					$sp.attr('src',this.src).stop(true, true).fadeIn('fast');
+				}
+			};
+			mainphoto.src = p.getMediumUrl();
+		}
 
 		$('#showpanel_content').get(0).scrollTop = 0;
 
@@ -425,6 +454,9 @@ var showpanel_ctl = {
 			if (ph !== 0) {
 				$('#showpanel_tab_bg').animate({height:ph});
 			}
+			break;
+		case 'video':
+			$('#showpanel_tab_bg').animate({height:hh});
 			break;
 		case 'map': {
 			$('#showpanel_tab_bg').animate({height:hh});
@@ -823,7 +855,11 @@ var common_ctl = {
 			if (show_type === 'detail') { // detail
 				s += '<div class="item_detail">';
 				s += ps;
-				s += '<div class="thumb"><a target="_blank" href="'+p.getPageUrl()+'"><img class="f_thumb" src="'+p.getThumbUrl()+'" title="'+p.getTitle()+'"/></a></div>';
+				s += '<div class="thumb"><a target="_blank" href="'+p.getPageUrl()+'"><img class="f_thumb" src="'+p.getThumbUrl()+'" title="'+p.getTitle()+'"/>';
+				if (p.isVideo()) {
+					s += '<img src="/images/video.png" style="position:absolute; left:3px; top:3px;"></img>';
+				}
+				s += '</a></div>';
 				s += '<div class="desc">';
 				s += '<span class="title">'+p.getTitle()+'</span><br/>';
 				if (has_owner) {
@@ -837,12 +873,20 @@ var common_ctl = {
 			} else if (show_type === 'thumb') { // thumb
 				s += '<div class="item_thumb">';
 				s += ps;
-				s += '<div class="thumb"><a target="_blank" href="'+p.getPageUrl()+'"><img class="f_thumb" src="'+p.getThumbUrl()+'" title="'+p.getTitle()+'"/></a></div>';
+				s += '<div class="thumb"><a target="_blank" href="'+p.getPageUrl()+'"><img class="f_thumb" src="'+p.getThumbUrl()+'" title="'+p.getTitle()+'"/>';
+				if (p.isVideo()) {
+					s += '<img src="/images/video.png" style="position:absolute; left:3px; top:3px;"></img>';
+				}
+				s += '</a></div>';
 				s += '</div>';
 			} else { // icon
 				s += '<div class="item_icon">';
 				s += ps;
-				s += '<div class="icon"><a target="_blank" href="'+p.getPageUrl()+'"><img class="f_icon" src="'+p.getIconUrl()+'" title="'+p.getTitle()+'"/></a></div>';
+				s += '<div class="icon"><a target="_blank" href="'+p.getPageUrl()+'"><img class="f_icon" src="'+p.getIconUrl()+'" title="'+p.getTitle()+'"/>';
+				if (p.isVideo()) {
+					s += '<img src="/images/video.png" style="position:absolute; left:3px; top:3px;"></img>';
+				}
+				s += '</a></div>';
 				s += '</div>';
 			}
 
@@ -927,11 +971,12 @@ var browse_ctl = {
 	create: function() {
 		$('<a id="browse_switch" href="javascript:void(0)">Browse</a>').appendTo('.switch');
 
-		var ss = 
+		var ss =
 		'<div id="browse_tab" class="tab">'+
 			'<div class="tabrow" style="height:2em;">'+
 				'<select id="browse_type">'+
-					'<option value="all" title="Search all photos.">All Photos</option>';
+					'<option value="all" title="Search all photos.">All Photos</option>'+
+					'<option value="video" title="Search all videos.">Only Video</option>';
 		if (user) {
 			ss +=
 					'<option value="user" title="Only Search your photos.">Your Photos</option>'+
@@ -941,7 +986,10 @@ var browse_ctl = {
 			          '</select>'+
 			'</div>'+
 			'<div class="tabrow" style="height:2em;">'+
-				'<form id="browse_query" style="margin:0; padding:0;"><input type="text" style="width:350px;"/> <input type="submit" value="Search"/></form>'+
+				'<form id="browse_query" style="margin:0; padding:0;">'+
+					'<input type="text" style="width:350px;"/>'+
+					'<input type="submit" value="Search"/>'+
+				'</form>'+
 			'</div>'+
 			'<div class="tabrow" style="height:10em;">'+
 				'<div><span id="plac"></span><span class="taglist_clear" style="float:right;">Clear</span></div>'+
@@ -949,16 +997,22 @@ var browse_ctl = {
 			'</div>'+
 			'<div class="tabrow" style="height:2em;">'+
 				'<span id="browse_perpage" style="float:right;">'+
-					'<span id="browse_perpage_25" class="perpage_num">25</span><span id="browse_perpage_50" class="perpage_num">50</span><span id="browse_perpage_100" class="perpage_num">100</span><span id="browse_perpage_200" class="perpage_num">200</span>'+
+					'<span id="browse_perpage_25" class="perpage_num">25</span>'+
+					'<span id="browse_perpage_50" class="perpage_num">50</span>'+
+					'<span id="browse_perpage_100" class="perpage_num">100</span>'+
+					'<span id="browse_perpage_200" class="perpage_num">200</span>'+
 				'</span>'+
 				'<span id="browse_pager"></span>'+
 			'</div>'+
 			'<div class="tabrow" style="height:2em;">'+
 				'<span id="browse_viewas" style="float:right;">'+
-					'<span id="browse_viewas_icons" class="viewas_type" type="icons">Icons</span><span id="browse_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span><span id="browse_viewas_detail" class="viewas_type" type="detail">Detail</span>'+
+					'<span id="browse_viewas_icons" class="viewas_type" type="icons">Icons</span>'+
+					'<span id="browse_viewas_thumb" class="viewas_type" type="thumb">Thumbnail</span>'+
+					'<span id="browse_viewas_detail" class="viewas_type" type="detail">Detail</span>'+
 				'</span>'+
 				'<span id="browse_sortby">'+
-					'<span id="browse_sortby_posted" class="sortby_type" type="posted">Date</span><span id="browse_sortby_interestingness" class="sortby_type" type="interestingness">Rank</span>'+
+					'<span id="browse_sortby_posted" class="sortby_type" type="posted">Date</span>'+
+					'<span id="browse_sortby_interestingness" class="sortby_type" type="interestingness">Rank</span>'+
 				'</span>'+
 			'</div>'+
 			'<div id="browse_photolist" class="photolist" style="top:18.5em;"></div>'+
@@ -1243,6 +1297,8 @@ var browse_ctl = {
 		var browse_type = $('#browse_type').val();
 		if (browse_type === 'user' && user) {
 			opts.user_id = user.nsid;
+		} else if (browse_type === 'video') {
+			opts.media = 'videos';
 		} else if (/^\d+@N\d+$/.exec(browse_type)) {
 			opts.user_id = browse_type;
 		}
