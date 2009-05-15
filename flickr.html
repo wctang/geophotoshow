@@ -389,6 +389,8 @@ if (/^#ll=([\-\d\,\.]+)&z=(\d+)(.*)$/.exec(location.hash)) {
 } else if (geostr) {
 	var pos = geostr.split(',');
 	gmap.setCenter(new GLatLng(parseFloat(pos[0]),parseFloat(pos[1])), parseInt(pos[2],10));
+} else if (google.loader.ClientLocation) {
+	gmap.setCenter(new GLatLng(parseFloat(google.loader.ClientLocation.latitude), parseFloat(google.loader.ClientLocation.longitude)), 8);
 } else {
 	var bounds = new GLatLngBounds(new GLatLng(-40,-100), new GLatLng(40,100)); //new GLatLng(20,0)
 	var zoom = gmap.getBoundsZoomLevel(bounds);

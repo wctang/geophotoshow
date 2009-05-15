@@ -304,7 +304,7 @@ var showpanel_ctl = {
 	init: function() {
 		var $p = $(
 		'<div id="showpanel" style="position:absolute; top:0; bottom:0; left:0; right:0; z-index:1; display:none;">'+
-			'<div id="showpanel_bg" style="position:absolute; left:0; right:0; top:0; bottom:0; background-color:gray;"></div>'+
+			'<div id="showpanel_bg" style="position:absolute; left:0; right:0; top:0; bottom:0; background-color:black;"></div>'+
 			'<div class="bar" style="background-color:#D5DDF3;">'+
 				'<img class="close" src="/images/transparent.png" style="float:right; margin:5px 10px;"/>'+
 				'<span id="showpanel_switch" style="float:right;">'+
@@ -321,8 +321,10 @@ var showpanel_ctl = {
 						'<span>From <a class="owner" target="_blank"></a></span><br/>'+
 						'<span>Posted on <a class="uploaddate" target="_blank"></a>, Taken on <a class="takendate" target="_blank"></a></span>'+
 					'</div>'+
-					'<div id="showpanel_tabs" style="margin-top:1em; position:relative; height:300px;">'+
-						'<div id="showpanel_tab_photo" class="showpanel_tab" style="position:absolute; width:300; height:300px; background:transparent url(/images/loading.gif) no-repeat center;">'+
+					'<div style="margin-top:1em; position:relative;">'+
+						'<div id="showpanel_tab_bg" style="position:absolute; width:500px; height:300px; padding:10px; left:-10px; top:-10px; background-color:white;">'+
+						'</div>'+
+						'<div id="showpanel_tab_photo" class="showpanel_tab" style="position:absolute; width:500px; height:300px; background:transparent url(/images/loading.gif) no-repeat center;">'+
 							'<img class="photo"/>'+
 						'</div>'+
 						'<div id="showpanel_tab_map" class="showpanel_tab" style="position:absolute;">'+
@@ -335,14 +337,14 @@ var showpanel_ctl = {
 				'</div>'+
 			'</div>'+
 		'</div>');
-		
+
 		$p.find('img.close').click(function() { showpanel_ctl.hide(); });
 		$p.find('#showpanel_content').click(function(e) {
 			if ($(e.target).attr('id') === 'showpanel_content') {
 				showpanel_ctl.hide();
 			}
 		});
-		$p.find('#showpanel_bg').css('opacity', .5);
+		$p.find('#showpanel_bg').css('opacity', .8);
 
 		$p.find('#showpanel_switch a').click(function() {
 			var tab = $(this).attr('id').replace(/showpanel_switch_/,'');
@@ -421,11 +423,11 @@ var showpanel_ctl = {
 		case 'photo':
 			var ph = $('#showpanel_tab_photo').height();
 			if (ph !== 0) {
-				$('#showpanel_tabs').animate({height:ph});
+				$('#showpanel_tab_bg').animate({height:ph});
 			}
 			break;
 		case 'map': {
-			$('#showpanel_tabs').animate({height:hh});
+			$('#showpanel_tab_bg').animate({height:hh});
 			var p = $('#showpanel_switch_map').get(0).p;
 			if (!p) return;
 
@@ -447,7 +449,7 @@ var showpanel_ctl = {
 			break;
 		}
 		case 'streetview': {
-			$('#showpanel_tabs').animate({height:hh});
+			$('#showpanel_tab_bg').animate({height:hh});
 			var loc = $('#showpanel_switch_streetview').get(0).location;
 			if (!loc) return;
 
@@ -1140,7 +1142,7 @@ var browse_ctl = {
 		this.__markers = [];
 	},
 	refreshPhotoGroupCallback: function(rsp, params, api) {
-		if (browse_ctl.__timestamp !== params.__timestamp) {
+		if (browse_ctl.__timestamp !== params.__timestamp || mod_ctl.getCurrentMod() !== 'browse') {
 			return;
 		}
 
@@ -1297,6 +1299,7 @@ var browse_ctl = {
 		$('#links_findmylocation').hide();
 		$('#links_currentmap').hide();
 		this.clearGroupMarker();
+		ui_ctl.endLoading();
 	}
 };
 
@@ -1979,6 +1982,7 @@ var phoset_ctl = {
 	},
 	onDeActive: function() {
 		$('#links_photoset').hide();
+		ui_ctl.endLoading();
 		phoset_ctl.hideGPX();
 		phoset_ctl.clearGroupMarker();
 	}
