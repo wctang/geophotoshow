@@ -321,15 +321,15 @@ var showpanel_ctl = {
 			'<div class="bar" style="background-color:#D5DDF3;">'+
 				'<img class="close" src="/images/transparent.png" style="float:right; margin:5px 10px;"/>'+
 				'<span id="showpanel_switch" style="float:right;">'+
-					'<a id="showpanel_switch_photo" href="javascript:void(0)">Photo</a> | '+
-					'<a id="showpanel_switch_video" href="javascript:void(0)">Video</a> | '+
-					'<a id="showpanel_switch_map" href="javascript:void(0)">Map</a> | '+
+					'<a id="showpanel_switch_photo" href="javascript:void(0)">Photo</a>'+
+					'<a id="showpanel_switch_video" href="javascript:void(0)">Video</a>'+
+					'<a id="showpanel_switch_map" href="javascript:void(0)">Map</a>'+
 					'<a id="showpanel_switch_streetview" href="javascript:void(0)">Street View</a>'+
 				'</span>'+
 			'</div>'+
 			'<div id="showpanel_content" style="position:absolute; top:27px; bottom:0; right:0; left:0; overflow:auto;">'+
 				'<div style="margin:auto; width:500px; padding:10px; background-color:white;">'+
-					'<h1><a class="title" target="_blank"></a></h1>'+
+					'<h2><a class="title" target="_blank"></a></h2>'+
 					'<div style="margin-top:1em;">'+
 						'<a class="buddyurl" target="_blank"><img class="buddy" style="width:48px; height:48px; background:transparent url(/images/loading.gif);"></img></a>'+
 						'<span>From <a class="owner" target="_blank"></a></span><br/>'+
@@ -810,13 +810,11 @@ var common_ctl = {
 	makePager: function($p, page, pages) {
 		$p.empty();
 		if ( pages <= 0) return;
+		console.log(page, pages);
 
-		var s = [0, 1, page-1, page, page+1, pages];
-		if (page < 5) {
-			s.push(2); s.push(3); s.push(4); s.push(5);
-		}
-		if (pages > 10000) {
-			s.push(10000);
+		var s = [0, 1, 2, page-2, page-1, page, page+1, page+2];
+		if (page < 6) {
+			s.push(2); s.push(3); s.push(4); s.push(5); s.push(6);
 		}
 		s.sort(function(a,b) { return a-b; });
 
@@ -824,18 +822,17 @@ var common_ctl = {
 		for (var i=1; i<s.length; ++i) {
 			if (s[i] < 1 || s[i] > pages || s[i] === s[i-1]) continue;
 
-			if (s[i] > 10000) {
-				$p.append('<span class="pager_dots">...'+pages+'</span>');
-				break;
-			}
 			if (s[i] !== s[i-1]+1) {
 				$p.append('<span class="pager_dots">...</span>');
 			}
-			if (s[i] == page) {
+			if (s[i] === page) {
 				$p.append('<span class="pager_curr">'+s[i]+'</span>');
 			} else {
 				$p.append('<span class="pager_num">'+s[i]+'</span>');
 			}
+		}
+		if (s[s.length-1] < pages) {
+			$p.append('<span class="pager_dots">...'+pages+'</span>');
 		}
 		$p.append('<span class="pager_next">next</span>');
 	},
