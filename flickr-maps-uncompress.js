@@ -172,6 +172,12 @@ var flickr = {
 			}
 		}
 	},
+	panda: {
+		getPhotos: function(opts, cb) {
+			opts.extras = flickr.extras;
+			return flickr._callApi('flickr.panda.getPhotos', opts, cb);
+		}
+	},
 	people: {
 		getPublicGroups: function(opts, cb) {
 			return flickr._callApi('flickr.people.getPublicGroups', opts, cb);
@@ -958,6 +964,14 @@ var common_ctl = {
 };
 
 
+//
+//var module_ctl = {
+//	create: function() {},
+//	init: function() {},
+//	onActive: function() {},
+//	onDeActive: function() {}
+//};
+//
 var browse_ctl = {
 	page: 1,
 	pages: 0,
@@ -1356,6 +1370,53 @@ var browse_ctl = {
 		$('#links_currentmap').hide();
 		this.clearGroupMarker();
 		ui_ctl.endLoading();
+	}
+};
+
+
+var recent_ctl = {
+	__markers: [],
+	create: function() {
+		$('<a id="recent_switch" href="javascript:void(0)">Recent</a>').appendTo('.switch');
+	},
+	init: function() {
+	},
+	onActive: function() {
+		flickr.panda.getPhotos({panda_name:'wang wang'}, function(rsp) {
+			var photos = [];
+			flickr.parsePhotos(photos,rsp,true);
+
+			var n=-90,s=90,e=-180,w=180;
+			$.each(photos, function(i,p) {
+				if (!p.hasGeo()) return;
+
+				if (n < p.lat) n = p.lat;
+				if (s > p.lat) s = p.lat;
+				if (e < p.lng) e = p.lng;
+				if (w > p.lng) w = p.lng;
+			});
+
+			var dh = (n-s)/10;
+			var bounds = new GLatLngBounds(new GLatLng(s,w), new GLatLng(n+dh,e-dh));
+			var zoom = gmap.getBoundsZoomLevel(bounds);
+
+			gmap.setCenter(bounds.getCenter(), zoom);
+
+			var pgrps = common_ctl.caculatePhotoGroups(photos);
+
+			$.each(pgrps, function(i,pg) {
+				if (pg.photos.length === 0) return;
+
+				var marker = common_ctl.createGroupMarker(pg);
+//				GEvent.addListener(marker, "click", phoset_ctl.onGroupMarkerClick);
+				recent_ctl.__markers.push(marker);
+				gmap.addOverlay(marker);
+			});
+		});
+	},
+	onDeActive: function() {
+		$.each(this.__markers, function(i,ov) { gmap.removeOverlay(ov); });
+		this.__markers = [];
 	}
 };
 
@@ -2232,7 +2293,7 @@ var show_ctl = {
 
 
 mod_ctl = {
-	mods: {common:common_ctl, browse:browse_ctl, geotag:geotag_ctl, phoset:phoset_ctl, show:show_ctl},
+	mods: {common:common_ctl, browse:browse_ctl, recent:recent_ctl, geotag:geotag_ctl, phoset:phoset_ctl, show:show_ctl},
 	shows: {showpanel:showpanel_ctl, embedpanel:embedpanel_ctl},
 	showmode: null,
 	last_mod: null,
