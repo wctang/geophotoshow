@@ -318,24 +318,26 @@ var showpanel_ctl = {
 		var $p = $(
 		'<div id="showpanel" style="position:absolute; top:0; bottom:0; left:0; right:0; z-index:1; display:none;">'+
 			'<div id="showpanel_bg" style="position:absolute; left:0; right:0; top:0; bottom:0; background-color:black;"></div>'+
-			'<div class="bar" style="background-color:#D5DDF3;">'+
-				'<img class="close" src="/images/transparent.png" style="float:right; margin:5px 10px;"/>'+
-				'<span id="showpanel_switch" style="float:right;">'+
-					'<a id="showpanel_switch_photo" href="javascript:void(0)">Photo</a>'+
-					'<a id="showpanel_switch_video" href="javascript:void(0)">Video</a>'+
-					'<a id="showpanel_switch_map" href="javascript:void(0)">Map</a>'+
-					'<a id="showpanel_switch_streetview" href="javascript:void(0)">Street View</a>'+
-				'</span>'+
-			'</div>'+
-			'<div id="showpanel_content" style="position:absolute; top:27px; bottom:0; right:0; left:0; overflow:auto;">'+
+			'<div id="showpanel_content" style="position:absolute; top:0px; bottom:0; right:0; left:0; overflow:auto;">'+
 				'<div style="margin:auto; width:500px; padding:10px; background-color:white;">'+
-					'<h2><a class="title" target="_blank"></a></h2>'+
-					'<div style="margin-top:1em;">'+
+					'<div class="bar" style="background-color:#D5DDF3;">'+
+						'<img class="close" src="/images/transparent.png" style="float:right; margin:5px 10px;"/>'+
+						'<span id="showpanel_switch" style="float:right;">'+
+							'<a id="showpanel_switch_photo" href="javascript:void(0)">Photo</a>'+
+							'<a id="showpanel_switch_video" href="javascript:void(0)">Video</a>'+
+							'<a id="showpanel_switch_map" href="javascript:void(0)">Map</a>'+
+							'<a id="showpanel_switch_streetview" href="javascript:void(0)">Street View</a>'+
+						'</span>'+
+					'</div>'+
+					'<div style="padding:5px 0px;">'+
+						'<a class="title" target="_blank"></a>'+
+					'</div>'+
+					'<div style="margin-top:.5m;">'+
 						'<a class="buddyurl" target="_blank"><img class="buddy" style="width:48px; height:48px; background:transparent url(/images/loading.gif);"></img></a>'+
 						'<span>From <a class="owner" target="_blank"></a></span><br/>'+
 						'<span>Posted on <a class="uploaddate" target="_blank"></a>, Taken on <a class="takendate" target="_blank"></a></span>'+
 					'</div>'+
-					'<div style="margin-top:1em; position:relative;">'+
+					'<div style="margin-top:1.5em; position:relative;">'+
 						'<div id="showpanel_tab_bg" style="position:absolute; width:500px; height:300px; padding:10px; left:-10px; top:-10px; background-color:white;">'+
 						'</div>'+
 						'<div id="showpanel_tab_photo" class="showpanel_tab" style="position:absolute; width:500px; height:300px; background:transparent url(/images/loading.gif) no-repeat center;">'+
