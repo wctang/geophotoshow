@@ -24,25 +24,20 @@ function FlickrPhoto(p) {
 	this.on = p.ownername;
 	this.h = parseInt(p.o_height,10);
 	this.w = parseInt(p.o_width,10);
-	this.frm = p.farm;
-	this.srv = p.server;
 	this.inf = p.iconfarm;
 	this.ins = p.iconserver;
-	if (p.media === 'video') {
-		this.med = 1;
-	} else {
-		this.med = 0;
-	}
+	this.med = p.media;
+	this.url = 'http://farm'+p.farm+'.static.flickr.com/'+p.server+'/'+this.id+'_'+this.sec;
 }
 FlickrPhoto.prototype = {
-	isVideo: function() { return this.med === 1; },
+	isVideo: function() { return this.med === 'video'; },
 	hasGeo: function() { return this.acc !== 0; },
 	getTitle: function() { return this.t; },
-	getIconUrl: function() { return 'http://farm'+this.frm+'.static.flickr.com/'+this.srv+'/'+this.id+'_'+this.sec+'_s.jpg'; }, //75x75
-	getThumbUrl: function() { return 'http://farm'+this.frm+'.static.flickr.com/'+this.srv+'/'+this.id+'_'+this.sec+'_t.jpg'; }, //max100
-	getSmallUrl: function() { return 'http://farm'+this.frm+'.static.flickr.com/'+this.srv+'/'+this.id+'_'+this.sec+'_m.jpg'; }, //max240
-	getMediumUrl: function() { return 'http://farm'+this.frm+'.static.flickr.com/'+this.srv+'/'+this.id+'_'+this.sec+'.jpg'; }, //max500
-	getLargeUrl: function() { return 'http://farm'+this.frm+'.static.flickr.com/'+this.srv+'/'+this.id+'_'+this.sec+'_b.jpg'; }, //max1024
+	getIconUrl: function() { return this.url+'_s.jpg'; }, //75x75
+	getThumbUrl: function() { return this.url+'_t.jpg'; }, //max100
+	getSmallUrl: function() { return this.url+'_m.jpg'; }, //max240
+	getMediumUrl: function() { return this.url+'.jpg'; }, //max500
+	getLargeUrl: function() { return this.url+'_b.jpg'; }, //max1024
 	getFitUrl: function(w, h) {
 		if ((w > 1024 && h > 1024) || (this.w >= this.h && w > 1024 && (w*this.h/this.w) < h) || (this.w < this.h && h > 1024 && (h*this.w/this.h) < w)) {
 			return this.getLargeUrl();
@@ -133,8 +128,9 @@ var flickr = {
 				}
 
 				script.src = signedurl;
-				if (head)
+				if (head) {
 					head.appendChild(script);
+				}
 			}});
 		} else {
 			opts.api_key = flickr._api_key;
@@ -166,10 +162,10 @@ var flickr = {
 	// API
 	groups: {
 		pools: {
-			getPhotos: function(opts, cb, issig) {
-				opts.extras = flickr.extras;
-				return flickr._callApi('flickr.groups.pools.getPhotos', opts, cb, issig);
-			}
+		getPhotos: function(opts, cb, issig) {
+			opts.extras = flickr.extras;
+			return flickr._callApi('flickr.groups.pools.getPhotos', opts, cb, issig);
+		}
 		}
 	},
 	panda: {
@@ -190,12 +186,12 @@ var flickr = {
 	},
 	photos: {
 		geo: {
-			setLocation: function(opts, cb) {
-				return flickr._callApi('flickr.photos.geo.setLocation', opts, cb, true);
-			},
-			removeLocation: function(opts, cb) {
-				return flickr._callApi('flickr.photos.geo.removeLocation', opts, cb, true);
-			}
+		setLocation: function(opts, cb) {
+			return flickr._callApi('flickr.photos.geo.setLocation', opts, cb, true);
+		},
+		removeLocation: function(opts, cb) {
+			return flickr._callApi('flickr.photos.geo.removeLocation', opts, cb, true);
+		}
 		},
 		getNotInSet: function(opts, cb) {
 			opts.extras = flickr.extras;
@@ -601,7 +597,7 @@ var common_ctl = {
 		0.0000494593408794467,
 		0.0000247296704397233],
 
-	create: function() {
+	init: function() {
 		if (!gmap) return;
 		GEvent.addListener(gmap, "dragend", common_ctl.onMapDragend);
 		GEvent.addListener(gmap, "zoomend", common_ctl.onMapZoomend);
@@ -900,7 +896,7 @@ var browse_ctl = {
 	_center: null,
 
 	create: function() {
-		$('<a id="browse_switch" href="javascript:void(0)">Browse</a>').appendTo('.switch');
+		$('<a id="browse_switch" href="javascript:void(0)">Browse</a>').appendTo('#switch');
 
 		var ss =
 		'<div id="browse_tab" class="tab">'+
@@ -952,7 +948,7 @@ var browse_ctl = {
 
 		if (navigator.geolocation || (google.loader && google.loader.ClientLocation)) {
 			$('<a id="links_findmylocation" href="javascript:void(0)" style="display:none;">Find my location</a>')
-				.appendTo('span.links')
+				.appendTo('#links')
 				.click(function() { try {
 					function jumpto(lat, lng, acc) {
 						if (!acc) acc = 10;
@@ -976,7 +972,7 @@ var browse_ctl = {
 		}
 
 		$('<a id="links_currentmap" target="_blank" style="display:none;"><img class="link" src="/images/transparent.png"/>Link to this map</a>')
-			.appendTo('span.links')
+			.appendTo('#links')
 			.click(function() { try {
 				$('#links_currentmap_url').val(this.href);
 				$('#links_currentmap_panel').show();
@@ -1294,7 +1290,7 @@ var browse_ctl = {
 var recent_ctl = {
 	__markers: [],
 	create: function() {
-		$('<a id="recent_switch" href="javascript:void(0)">Recent</a>').appendTo('.switch');
+		$('<a id="recent_switch" href="javascript:void(0)">Recent</a>').appendTo('#switch');
 	},
 	init: function() {
 	},
@@ -1339,6 +1335,7 @@ var recent_ctl = {
 
 
 var geotag_ctl = {
+	// must login
 	page: 1,
 	pages: 0,
 	selected: [],
@@ -1347,9 +1344,7 @@ var geotag_ctl = {
 	curr_marker: null,
 
 	create: function() {
-		if (!user) return;
-
-		$('<a id="geotag_switch" href="javascript:void(0)">GeoTagging</a>').appendTo('.switch');
+		$('<a id="geotag_switch" href="javascript:void(0)">GeoTagging</a>').appendTo('#switch');
 
 		$(
 		'<div id="geotag_tab" class="tab">'+
@@ -1402,8 +1397,6 @@ var geotag_ctl = {
 	},
 
 	init: function() {
-		if (!user) return;
-
 		flickr.photosets.getList( {user_id:user.nsid}, function(rsp, params, api) {
 			if (!rsp || !rsp.photosets || !rsp.photosets.photoset) return;
 
@@ -1708,8 +1701,6 @@ var geotag_ctl = {
 		}
 	},
 	refreshPhotoList: function(actopt) {
-		if (!user) return;
-
 		if (actopt.page) {
 			geotag_ctl.page = actopt.page;
 		}
@@ -1790,15 +1781,14 @@ var geotag_ctl = {
 
 
 var phoset_ctl = {
+	// must login
 	photos: [],
 	curr_photo_list: null,
 	curr_gpx: [],
 	__markers: [],
 
 	create: function() {
-		if (!user) return;
-
-		$('<a id="phoset_switch" href="javascript:void(0)">Photoset</a>').appendTo('.switch');
+		$('<a id="phoset_switch" href="javascript:void(0)">Photoset</a>').appendTo('#switch');
 
 		$(
 		'<div id="phoset_tab" class="tab">'+
@@ -1823,7 +1813,7 @@ var phoset_ctl = {
 			'<div id="phoset_photolist" class="photolist" style="top:4em;"></div>'+
 		'</div>').appendTo('#tabs');
 
-		$('<a id="links_photoset" style="display:none;"><img class="link" src="/images/transparent.png"/>Link</a>').appendTo('span.links');
+		$('<a id="links_photoset" style="display:none;"><img class="link" src="/images/transparent.png"/>Link</a>').appendTo('#links');
 		$('<div id="links_photoset_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">'+
 			'<img class="close" src="/images/transparent.png" style="float:right;"/>'+
 			'<div>Paste link in <b>email</b> or <b>IM</b><br/>'+
@@ -1840,8 +1830,6 @@ var phoset_ctl = {
 	},
 
 	init: function() {
-		if (!user) return;
-
 		flickr.photosets.getList( {user_id:user.nsid}, function(rsp, params, api) {
 			if (!rsp || !rsp.photosets || !rsp.photosets.photoset) return;
 
@@ -2210,7 +2198,7 @@ var show_ctl = {
 
 
 mod_ctl = {
-	mods: {common:common_ctl, browse:browse_ctl, recent:recent_ctl, geotag:geotag_ctl, phoset:phoset_ctl, show:show_ctl},
+	mods: {browse:browse_ctl, recent:recent_ctl, geotag:geotag_ctl, phoset:phoset_ctl, show:show_ctl},
 	shows: {showpanel:showpanel_ctl, embedpanel:embedpanel_ctl},
 	showmode: null,
 	last_mod: null,
@@ -2218,6 +2206,7 @@ mod_ctl = {
 	getCurrentMod: function() { return this.last_mod; },
 	getCurrentModCtl: function() { return this.mods[this.last_mod]; },
 	init: function(mods) {
+		common_ctl.init();
 		$.each(mods, function(k,v) {
 			mod_ctl.mods[v].create();
 		});
@@ -2235,7 +2224,7 @@ mod_ctl = {
 		if (mod === this.last_mod) return;
 		$('.tab').hide();
 		$('#'+mod+'_tab').show();
-		$('.switch a').removeClass('sel');
+		$('#switch a').removeClass('sel');
 		$('#'+mod+'_switch').addClass('sel');
 		if (this.last_mod) {
 			this.getCurrentModCtl().onDeActive();

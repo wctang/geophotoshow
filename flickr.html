@@ -58,10 +58,10 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 
 .bar { position:relative; height:27px; line-height:27px; }
 .bar span { font-size:80%; margin-left:10px; }
-.switch a { padding:0 5px; border-right:1px solid gray; border-left:1px solid gray; }
-.switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:default; }
-#mainbar span { float:right; padding-right:2em; }
-#mainbar span.links a { padding:0 5px; }
+#switch a { padding:0 5px; border-right:1px solid gray; border-left:1px solid gray; }
+#switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:default; }
+#links { float:right; padding-right:2em; }
+#links a { padding:0 5px; }
 
 #tabs { position:relative; font-size:80%; background-color:white; }
 .tab { position:absolute; top:6px; left:6px; bottom:6px; right:6px; overflow:hidden; display:none; }
@@ -153,8 +153,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 
 <div id="content">
   <div id="mainbar" class="bar" style="background-color:#D5DDF3;">
-    <span class="links">
-    </span>
+    <span id="links"></span>
   </div>
   <div id="map"></div>
   <div class="sd sdh"><div class="h1 o1"></div><div class="h2 o2"></div><div class="h3 o3"></div><div class="h4 o4"></div><div class="h5 o5"></div></div>
@@ -163,8 +162,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
     <a id="panel_toggle" href="javascript:void(0)" style="position:absolute;"><img class="col" style="position:absolute; right:-1px;" src="/images/transparent.png"/></a>
     <div class="sd sdvr"><div class="v1 o1"></div><div class="v2 o2"></div><div class="v3 o3"></div><div class="v4 o4"></div><div class="v5 o5"></div></div>
     <div class="bar" style="background-color:#E8ECF9;">
-      <span class="switch">
-      </span>
+      <span id="switch"></span>
     </div>
     <div id="tabs">
     </div>
@@ -270,7 +268,7 @@ ui_ctl = {
 		this._hideRange();
 
 
-		$(".switch a").click(function(){
+		$("#switch a").click(function(){
 			mod_ctl.switchTo($(this).attr('id').replace(/_switch/,''));
 		});
 	},
@@ -422,7 +420,11 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 
 	settings_ctl._init();
 
-	mod_ctl.init(['common','browse','geotag','phoset']);
+	if (user) {
+		mod_ctl.init(['browse','geotag','phoset']);
+	} else {
+		mod_ctl.init(['browse']);
+	}
 	mod_ctl.init_show('showpanel');
 	ui_ctl.init();
 
