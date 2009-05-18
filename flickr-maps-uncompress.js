@@ -175,6 +175,9 @@ var flickr = {
 		}
 	},
 	people: {
+		getInfo: function(opts, cb) {
+			return flickr._callApi('flickr.people.getInfo', opts, cb);
+		},
 		getPublicGroups: function(opts, cb) {
 			return flickr._callApi('flickr.people.getPublicGroups', opts, cb);
 		}
@@ -192,6 +195,9 @@ var flickr = {
 		removeLocation: function(opts, cb) {
 			return flickr._callApi('flickr.photos.geo.removeLocation', opts, cb, true);
 		}
+		},
+		getInfo: function(opts, cb) {
+			return flickr._callApi('flickr.photos.getInfo', opts, cb);
 		},
 		getNotInSet: function(opts, cb) {
 			opts.extras = flickr.extras;
@@ -2005,9 +2011,58 @@ var show_ctl = {
 						ui_ctl.on_error('This set have no geotagged photo.');
 					}
 				} finally {
-					if (isfinal)
-					ui_ctl.endLoading();
+					if (isfinal) {
+						ui_ctl.endLoading();
+					}
 				}
+			});
+		});
+	},
+	loadPhoto: function(photo_ids) {
+		ui_ctl.beginLoading();
+
+		var photos = [];
+
+		$.each(photo_ids, function(k,v) {
+			flickr.photos.getInfo({photo_id:v}, function(rsp) {
+				var p = new FlickrPhoto(rsp.photo);
+				p.t = rsp.photo.title._content;
+				p.lat = parseFloat(rsp.photo.location.latitude);
+				p.lng = parseFloat(rsp.photo.location.longitude);
+				p.acc = parseInt(rsp.photo.location.accuracy,10);
+				p.du = parseInt(rsp.photo.dates.posted,10);
+				p.dt = rsp.photo.dates.datetaken;
+				p.oi = rsp.photo.owner.nsid;
+				p.on = rsp.photo.owner.username;
+				p.med = rsp.photo.media;
+				if (!p.hasGeo()) {
+					return;
+				}
+
+				flickr.people.getInfo({user_id:p.oi}, function(rsp) { try {
+					p.inf = rsp.person.iconfarm;
+					p.ins = rsp.person.iconserver;
+
+					gmap.setCenter(new GLatLng(p.lat, p.lng), p.acc);
+
+					var icon = new GIcon(), siz;
+					icon.transparent= "/images/transparent.png";
+					icon.label = {url:p.getIconUrl()};
+					icon.label.anchor = new GPoint(4,4);
+					siz = 42;
+					icon.image = "/images/mbg"+siz+"x"+siz+".png";
+					icon.iconSize = new GSize(siz, siz);
+					icon.iconAnchor = new GPoint(siz/2, siz/2);
+					icon.label.size = new GSize(siz-8,siz-8);
+
+					var marker = new GMarker(new GLatLng(p.lat, p.lng), {icon:icon});
+					GEvent.addListener(marker, "click", function() {
+						mod_ctl.showmode.showPhoto(p);
+					});
+					gmap.addOverlay(marker);
+				} finally {
+					ui_ctl.endLoading();
+				}});
 			});
 		});
 	},

@@ -230,27 +230,14 @@ class GpxUploadHandler(webapp.RequestHandler):
     self.response.out.write('<script type="text/javascript">'+cb+'('+json.write(rsp)+')</script>')
 
 
-class FlickrPhotoSetHandler(webapp.RequestHandler):
-  def get(self, params):
-    if params == '':
-      return
-
-    p = re.compile('/')
-    params = p.sub( ',', params)
-
-    val = {'API_KEY':Flickr.API_KEY, 'fsetids':params}
-    path = os.path.join(os.path.dirname(__file__), 'show.html')
-    self.response.headers.add_header("Expires", "Tue, 01 Jan 1980 1:00:00 GMT")
-    self.response.headers.add_header("Pragma", "no-cache")
-    self.response.out.write(template.render(path, val))
-
 class ShowHandler(webapp.RequestHandler):
   def get(self):
+    photoid = self.request.get('pid')
     fsetids = self.request.get('fset')
     gpxids = self.request.get('gpx')
-    if fsetids == '' and gpxids == '':
+    if photoid == '' and fsetids == '' and gpxids == '':
       return
-    val = {'API_KEY':Flickr.API_KEY, 'fsetids':fsetids, 'gpxids':gpxids}
+    val = {'API_KEY':Flickr.API_KEY, 'photoid':photoid, 'fsetids':fsetids, 'gpxids':gpxids}
     path = os.path.join(os.path.dirname(__file__), 'show.html')
     self.response.headers.add_header("Expires", "Tue, 01 Jan 1980 1:00:00 GMT")
     self.response.headers.add_header("Pragma", "no-cache")
@@ -259,7 +246,6 @@ class ShowHandler(webapp.RequestHandler):
 application = webapp.WSGIApplication([
       ('/', MainPage),
       (r'/flickr/(.*)', FlickrHandler),
-      (r'/flickrphotoset/(.*)', FlickrPhotoSetHandler),
       (r'/show', ShowHandler),
       (r'/gpxupload/(.*)', GpxUploadHandler),
     ],
