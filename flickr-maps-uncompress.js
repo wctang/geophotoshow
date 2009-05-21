@@ -495,16 +495,6 @@ var common_ctl = {
 		0.0000494593408794467,
 		0.0000247296704397233],
 
-	init: function() {
-		if (!gmap) return;
-		GEvent.addListener(gmap, "dragend", common_ctl.onMapDragend);
-		GEvent.addListener(gmap, "zoomend", common_ctl.onMapZoomend);
-
-		var mt = gmap.getMapTypes();
-		for (var i=0; i<mt.length; i++) {
-			mt[i].getMinimumResolution = function() { return 2; };
-		}
-	},
 	getRefreshRange: function(left, top, right, bottom) {
 		var nw = gmap.fromContainerPixelToLatLng(new GPoint(left+10, top+10));
 		var se = gmap.fromContainerPixelToLatLng(new GPoint(right-10, bottom-10));
@@ -710,25 +700,6 @@ var common_ctl = {
 		});
 
 		return bound;
-	},
-
-	onMapDragend: function() {
-		if (!gmap) return;
-
-		var mod = mod_ctl.getCurrentModCtl();
-		if (!mod) return;
-		if (!mod.onMapDragend) return;
-
-		return mod.onMapDragend();
-	},
-	onMapZoomend: function() {
-		if (!gmap) return;
-
-		var mod = mod_ctl.getCurrentModCtl();
-		if (!mod) return;
-		if (!mod.onMapZoomend) return;
-
-		return mod.onMapZoomend();
 	}
 };
 
@@ -994,7 +965,6 @@ var browse_ctl = {
 		$('#browse_sortby_'+settings_ctl.browse_sortby).attr('class', 'sortby_curr');
 		this.refresh_control.setMode(settings_ctl.refresh);
 	},
-
 	init: function() {
 		if (!user) return;
 
@@ -1010,6 +980,66 @@ var browse_ctl = {
 			});
 		});
 	},
+	onResize: function() {
+		var s = gmap.getSize();
+		var mw = parseInt(s.width/4);
+		var mh = parseInt(s.height/4);
+
+		this.$focus.css({top:mh*2-20, left:mw*2-20});
+		this.$range_lt.css({top:mh, left:mw});
+		this.$range_rb.css({top:mh*3, left:mw*3});
+
+		this.$curmap_p.hide();
+	},
+	onMapDragend: function() {
+		ui_ctl.savePosition();
+
+		browse_ctl.refreshLinks();
+		if (!browse_ctl.isNeedRefresh()) return;
+		if (settings_ctl.refresh !== 'auto') return;
+
+		browse_ctl.refreshPhotoGroup({page:1, updatepos:true});
+	},
+	onMapZoomend: function() {
+		ui_ctl.savePosition();
+
+		browse_ctl.refreshLinks();
+		if (settings_ctl.refresh !== 'auto') return;
+
+		browse_ctl.refreshPhotoGroup({page:1, updatepos:true});
+	},
+	onActive: function() {
+		this._center = this.__timestamp = null;
+		this.$p.show();
+		this.$sw.addClass('sel');
+		this.$focus.show();
+		this.$range_lt.show();
+		this.$range_rb.show();
+		this.refresh_control.show();
+		if (this.$myloc) {
+			this.$myloc.show();
+		}
+		this.$curmap.show();
+		this.refreshLinks();
+
+		this.refreshPhotoGroup({no_delay:true, updatepos:true});
+	},
+	onDeActive: function() {
+		this.$p.hide();
+		this.$sw.removeClass('sel');
+		this.$focus.hide();
+		this.$range_lt.hide();
+		this.$range_rb.hide();
+		this.refresh_control.hide();
+		if (this.$myloc) {
+			this.$myloc.hide();
+		}
+		this.$curmap.hide();
+		this.$curmap_p.hide();
+		this.clearGroupMarker();
+		ui_ctl.endLoading();
+	},
+
 	isNeedRefresh: function(pos) {
 		if (!this._center) return true;
 
@@ -1156,7 +1186,6 @@ var browse_ctl = {
 		ui_ctl.beginLoading();
 		flickr.photos.search(opts, this.refreshPhotoGroupCallback, !!user);
 	},
-
 	onRefreshClick: function() {
 		browse_ctl.refreshPhotoGroup({page:1, no_delay:true, updatepos:true});
 	},
@@ -1169,65 +1198,6 @@ var browse_ctl = {
 		} else {
 			this.$curmap.attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page);
 		}
-	},
-	onMapDragend: function() {
-		ui_ctl.savePosition();
-
-		browse_ctl.refreshLinks();
-		if (!browse_ctl.isNeedRefresh()) return;
-		if (settings_ctl.refresh !== 'auto') return;
-
-		browse_ctl.refreshPhotoGroup({page:1, updatepos:true});
-	},
-	onMapZoomend: function() {
-		ui_ctl.savePosition();
-
-		browse_ctl.refreshLinks();
-		if (settings_ctl.refresh !== 'auto') return;
-
-		browse_ctl.refreshPhotoGroup({page:1, updatepos:true});
-	},
-	onResize: function() {
-		var s = gmap.getSize();
-		var mw = parseInt(s.width/4);
-		var mh = parseInt(s.height/4);
-
-		this.$focus.css({top:mh*2-20, left:mw*2-20});
-		this.$range_lt.css({top:mh, left:mw});
-		this.$range_rb.css({top:mh*3, left:mw*3});
-
-		this.$curmap_p.hide();
-	},
-	onActive: function() {
-		this._center = this.__timestamp = null;
-		this.$p.show();
-		this.$sw.addClass('sel');
-		this.$focus.show();
-		this.$range_lt.show();
-		this.$range_rb.show();
-		this.refresh_control.show();
-		if (this.$myloc) {
-			this.$myloc.show();
-		}
-		this.$curmap.show();
-		this.refreshLinks();
-
-		this.refreshPhotoGroup({no_delay:true, updatepos:true});
-	},
-	onDeActive: function() {
-		this.$p.hide();
-		this.$sw.removeClass('sel');
-		this.$focus.hide();
-		this.$range_lt.hide();
-		this.$range_rb.hide();
-		this.refresh_control.hide();
-		if (this.$myloc) {
-			this.$myloc.hide();
-		}
-		this.$curmap.hide();
-		this.$curmap_p.hide();
-		this.clearGroupMarker();
-		ui_ctl.endLoading();
 	}
 };
 
@@ -1579,7 +1549,6 @@ var geotag_ctl = {
 		$('#geotag_viewas').find('span').attr('class', 'viewas_type');
 		$('#geotag_viewas_'+settings_ctl.geotag_viewas).attr('class', 'viewas_curr');
 	},
-
 	init: function() {
 		flickr.photosets.getList( {user_id:user.nsid}, function(rsp, params, api) {
 			if (!rsp || !rsp.photosets || !rsp.photosets.photoset) return;
@@ -1600,6 +1569,34 @@ var geotag_ctl = {
 			$.each(rsp.who.tags.tag, function(i,t) { $sel.append('<option value="tag-'+t._content+'">'+t._content+'</option>'); });
 		});
 	},
+	onResize: function() {
+		var s = gmap.getSize();
+		var mw = parseInt(s.width/4);
+		var mh = parseInt(s.height/4);
+
+		this.$focus.css({top:mh*2-20, left:mw*2-20});
+	},
+	onMapDragend: function() {
+		ui_ctl.savePosition();
+	},
+	onMapZoomend: function() {
+		ui_ctl.savePosition();
+	},
+	onActive: function() {
+		this.$p.show();
+		this.$sw.addClass('sel');
+		this.showCurrMarker();
+		this.showGPX();
+		this.$focus.show();
+	},
+	onDeActive: function() {
+		this.$p.hide();
+		this.$sw.removeClass('sel');
+		this.hideCurrMarker();
+		this.hideGPX();
+		this.$focus.hide();
+	},
+
 	hideCurrMarker: function(is_clear) {
 		if (geotag_ctl.curr_marker)
 		gmap.removeOverlay(geotag_ctl.curr_marker);
@@ -1614,7 +1611,6 @@ var geotag_ctl = {
 		if (geotag_ctl.curr_marker)
 		gmap.addOverlay(geotag_ctl.curr_marker);
 	},
-
 	hideGPX: function(is_clear) {
 		$.each(geotag_ctl.curr_gpx, function(i,ov) { gmap.removeOverlay(ov); });
 		if (is_clear)
@@ -1632,7 +1628,6 @@ var geotag_ctl = {
 
 		$.each(geotag_ctl.curr_gpx, function(i,ov) { gmap.addOverlay(ov); });
 	},
-
 	createMarker: function(photo) {
 		var icon = new GIcon();
 		icon.image = 'http://flickr-gmap-show.googlecode.com/svn/trunk/pics/marker_image.png';
@@ -1728,33 +1723,6 @@ var geotag_ctl = {
 		} else {
 			return;
 		}
-	},
-	onMapDragend: function() {
-		ui_ctl.savePosition();
-	},
-	onMapZoomend: function() {
-		ui_ctl.savePosition();
-	},
-	onResize: function() {
-		var s = gmap.getSize();
-		var mw = parseInt(s.width/4);
-		var mh = parseInt(s.height/4);
-
-		this.$focus.css({top:mh*2-20, left:mw*2-20});
-	},
-	onActive: function() {
-		this.$p.show();
-		this.$sw.addClass('sel');
-		this.showCurrMarker();
-		this.showGPX();
-		this.$focus.show();
-	},
-	onDeActive: function() {
-		this.$p.hide();
-		this.$sw.removeClass('sel');
-		this.hideCurrMarker();
-		this.hideGPX();
-		this.$focus.hide();
 	}
 };
 
@@ -1858,7 +1826,6 @@ var phoset_ctl = {
 		$('#phoset_viewas').find('span').attr('class', 'viewas_type');
 		$('#phoset_viewas_'+settings_ctl.phoset_viewas).attr('class', 'viewas_curr');
 	},
-
 	init: function() {
 		flickr.photosets.getList( {user_id:user.nsid}, function(rsp, params, api) {
 			if (!rsp || !rsp.photosets || !rsp.photosets.photoset) return;
@@ -1867,6 +1834,34 @@ var phoset_ctl = {
 			$.each(rsp.photosets.photoset, function(i, ps) { $sel.append('<option value="set-'+ps.id+'" title="'+ps.description._content+'">'+ps.title._content+' ('+ps.photos+')</option>'); });
 		});
 	},
+	onResize: function() {
+	},
+	onMapDragend: function() {
+	},
+	onMapZoomend: function() {
+		phoset_ctl.regroupPhotos();
+	},
+	onActive: function() {
+		this.$p.show();
+		this.$sw.addClass('sel');
+		this.showGPX();
+		this.loadGroupMarker();
+		this.$curmap_p.hide();
+
+		if (this.curr_phoset) {
+			this.$curmap.show();
+		}
+	},
+	onDeActive: function() {
+		this.$p.hide();
+		this.$sw.removeClass('sel');
+		this.hideGPX();
+		this.clearGroupMarker();
+		this.$curmap_p.hide();
+		this.$curmap.hide();
+		ui_ctl.endLoading();
+	},
+
 	loadPhotoSet: function(photoset_id) {
 		ui_ctl.beginLoading();
 		phoset_ctl.photos = [];
@@ -1975,35 +1970,6 @@ var phoset_ctl = {
 		}
 
 		$.each(phoset_ctl.curr_gpx, function(i,ov) { gmap.addOverlay(ov); });
-	},
-
-
-	onMapDragend: function() {
-	},
-	onMapZoomend: function() {
-		phoset_ctl.regroupPhotos();
-	},
-	onResize: function() {
-	},
-	onActive: function() {
-		this.$p.show();
-		this.$sw.addClass('sel');
-		this.showGPX();
-		this.loadGroupMarker();
-		this.$curmap_p.hide();
-
-		if (this.curr_phoset) {
-			this.$curmap.show();
-		}
-	},
-	onDeActive: function() {
-		this.$p.hide();
-		this.$sw.removeClass('sel');
-		this.hideGPX();
-		this.clearGroupMarker();
-		this.$curmap_p.hide();
-		this.$curmap.hide();
-		ui_ctl.endLoading();
 	}
 };
 
@@ -2052,6 +2018,21 @@ var show_ctl = {
 		});
 	},
 	init: function() {
+	},
+	onResize: function() {
+	},
+	onMapDragend: function() {
+	},
+	onMapZoomend: function() {
+		show_ctl.regroupPhotos();
+	},
+	onActive: function() {
+		this.$p.show();
+		show_ctl.loadGroupMarker();
+	},
+	onDeActive: function() {
+		this.$p.hide();
+		show_ctl.clearGroupMarker();
 	},
 
 	refreshTitle: function() {
@@ -2171,7 +2152,6 @@ var show_ctl = {
 			});
 		});
 	},
-
 	clearGroupMarker: function() {
 		$.each(this._markers, function(i,m) { gmap.removeOverlay(m); });
 	},
@@ -2222,12 +2202,10 @@ var show_ctl = {
 			gmap.addOverlay(marker);
 		});
 	},
-
 	fillPhotoList: function() {
 		var innerpanel = common_ctl.formatPhotoList(show_ctl.curr_photo_list, 'thumb');
 		$("#show_photolist").empty().append(innerpanel).get(0).scrollTop = 0;
 	},
-
 	onGroupMarkerClick: function() {
 		$.each(show_ctl._markers, function(i,m) {
 			m.setImage(m.getIcon().image);
@@ -2237,18 +2215,6 @@ var show_ctl = {
 		show_ctl.curr_photo_list = this.photos;
 		show_ctl.fillPhotoList();
 		ui_ctl.expendPanel();
-	},
-
-	onMapDragend: function() {},
-	onMapZoomend: function() { show_ctl.regroupPhotos(); },
-	onResize: function() {},
-	onActive: function() {
-		this.$p.show();
-		show_ctl.loadGroupMarker();
-	},
-	onDeActive: function() {
-		this.$p.hide();
-		show_ctl.clearGroupMarker();
 	}
 };
 
@@ -2265,13 +2231,33 @@ mod_ctl = {
 		settings_ctl._init();
 	},
 	init: function(mods) {
-		common_ctl.init();
-		$.each(mods, function(k,v) {
-			mod_ctl.mods[v].create();
-			mod_ctl.curr_mods.push(mod_ctl.mods[v]);
+		var that = this;
+		$.each(gmap.getMapTypes(), function(k,v) {
+			v.getMinimumResolution = function() { return 2; };
 		});
+
+		$.each(mods, function(k,v) {
+			that.mods[v].create();
+			that.curr_mods.push(that.mods[v]);
+		});
+
+		GEvent.addListener(gmap, "dragend", function() {
+			var mod = that.getCurrentModCtl();
+			if (!mod) return;
+			if (!mod.onMapDragend) return;
+
+			return mod.onMapDragend();
+		});
+		GEvent.addListener(gmap, "zoomend", function() {
+			var mod = that.getCurrentModCtl();
+			if (!mod) return;
+			if (!mod.onMapZoomend) return;
+
+			return mod.onMapZoomend();
+		});
+
 		showpanel_ctl.init();
-		mod_ctl.showmode = showpanel_ctl;
+		this.showmode = showpanel_ctl;
 	},
 	onResize: function() {
 		$.each(mod_ctl.curr_mods, function(k,v) {
@@ -2295,3 +2281,4 @@ mod_ctl = {
 	}
 };
 })();
+
