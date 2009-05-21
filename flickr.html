@@ -171,7 +171,6 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 
 <script type="text/javascript">
 var gmap = null, user = null, API_KEY = '{{ API_KEY }}', mod_ctl = null, ui_ctl = null;
-var settings_ctl = null;
 var panelexp = true;
 
 {% if user %}
@@ -189,8 +188,8 @@ ui_ctl = {
 		var mh = h-$m.offset().top;
 		var ph = h-$p.offset().top;
 
-		$('#mainbar').width(mw);
 		$m.css({height:mh, width:mw});
+		$('#mainbar').width(mw);
 		$('#tabs').height(mh);
 		$('.sdh').width(mw);
 		$('.sdv').height(mh);
@@ -204,103 +203,22 @@ ui_ctl = {
 
 		$('#panel_toggle').children('img').attr('class', (panelexp?'col':'exp'));
 
-		$('.popup_panel').hide();
-
-		if (gmap) gmap.checkResize();
-
-		if (gmap) ui_ctl._onResize();
-	},
-
-	$refresh_div: null,
-	init: function() {
-		ui_ctl.$refresh_div = $(
-		'<div id="refresh_control" style="text-align:center; font-size:11pt; display:none;">'+
-			'<img class="refresh" src="/images/transparent.png"/>'+
-			'<div id="sel_auto" class="selected">Auto</div>'+
-			'<div id="sel_manual" class="selable">Manual</div>'+
-		'</div>');
-		ui_ctl.$refresh_div.insertBefore('#map');
-		var RefreshControl = function() {}
-		RefreshControl.prototype = new GControl();
-		RefreshControl.prototype.initialize = function(map) {
-			map.getContainer().appendChild(ui_ctl.$refresh_div.get(0));
-			return ui_ctl.$refresh_div.get(0);
-		};
-		RefreshControl.prototype.getDefaultPosition = function() {
-			return new GControlPosition(G_ANCHOR_TOP_RIGHT, new GSize(20, 50));
-		};
-		gmap.addControl(new RefreshControl());
-
-		ui_ctl.$refresh_div.click(function(e) {
-			var tagname = e.target.tagName;
-			var clsname = e.target.className;
-
-			if (tagname === 'IMG' && clsname === 'refresh') {
-				if (mod_ctl.getCurrentModCtl().onRefreshClick) {
-					mod_ctl.getCurrentModCtl().onRefreshClick();
-				}
-			} else if (tagname === 'DIV' && clsname === 'selable') {
-				ui_ctl.$refresh_div.find('.selected').attr('class', 'selable');
-				settings_ctl.refresh = $(e.target).attr('class', 'selected').attr('id').replace('sel_', '');
-				settings_ctl._save();
-			}
-		});
-		if (settings_ctl.refresh === 'auto') {
-			ui_ctl.$refresh_div.find('#sel_auto').attr('class', 'selected');
-			ui_ctl.$refresh_div.find('#sel_manual').attr('class', 'selable');
-		} else {
-			ui_ctl.$refresh_div.find('#sel_auto').attr('class', 'selable');
-			ui_ctl.$refresh_div.find('#sel_manual').attr('class', 'selected');
+		if (gmap) {
+			gmap.checkResize();
 		}
-
-
-		$(
-		'<div id="screenrange" style="display:none;">'+
-			'<div id="focus" class="range"><div class="vline" style="top:0px; left:20px; height:41px;"></div><div class="hline" style="top:20px; left:0px; width:41px;"></div></div>'+
-			'<div id="range_lt" class="range"><div class="vline" style="top:0px; left:0px; height:100px;"></div><div class="hline" style="top:0px; left:0px; width:100px;"></div></div>'+
-			'<div id="range_rb" class="range"><div class="vline" style="bottom:0px; right:0px; height:100px;"></div><div class="hline" style="bottom:0px; right:0px; width:100px;"></div></div>'+
-		'</div>').insertBefore('#map');
-		gmap.getContainer().appendChild($('#focus').get(0));
-		gmap.getContainer().appendChild($('#range_lt').get(0));
-		gmap.getContainer().appendChild($('#range_rb').get(0));
-		this._onResize();
-		this._hideFocus();
-		this._hideRange();
-
-
+		if (mod_ctl) {
+			mod_ctl.onResize();
+		}
+	},
+	init: function() {
 		$("#switch a").click(function(){
 			mod_ctl.switchTo($(this).attr('id').replace(/_switch/,''));
 		});
 	},
 
-	_showRefreshControl: function() {
-		if (!this.$refresh_div) return;
-		this.$refresh_div.show();
-	},
-	_hideRefreshControl: function() {
-		if (!this.$refresh_div) return;
-		this.$refresh_div.hide();
-	},
-
-	_showFocus: function() { $('#focus').show(); },
-	_hideFocus: function() { $('#focus').hide(); },
-	_showRange: function() { $('#range_lt, #range_rb').show(); },
-	_hideRange: function() { $('#range_lt, #range_rb').hide(); },
-
-	_onResize: function() {
-		var $m = $('#map');
-		var mw = parseInt($m.width()/4);
-		var mh = parseInt($m.height()/4);
-
-		$('#focus').css({top:mh*2-20, left:mw*2-20});
-		$('#range_lt').css({top:mh, left:mw});
-		$('#range_rb').css({top:mh*3, left:mw*3});
-	},
-
 	beginLoading: function() {
 		$('#loading').show();
 	},
-
 	endLoading: function() {
 		$('#loading').hide();
 	},
@@ -319,7 +237,7 @@ ui_ctl = {
 	closePanel: function() {
 		panelexp = false;
 		ui_ctl.onResize(true);
-		$p = $('#panel');
+		var $p = $('#panel');
 		$p.animate({right:-$p.width()}, 'fast');
 	},
 
@@ -402,6 +320,7 @@ if (jq_loaded && jq_notrun) {
 	// http://dev.jquery.com/browser/trunk/plugins/cookie/jquery.cookie.min.js r6165
 	jQuery.cookie=function(name,value,options){if(typeof value!='undefined'){options=options||{};if(value===null){value='';options=$.extend({},options);options.expires=-1;}var expires='';if(options.expires&&(typeof options.expires=='number'||options.expires.toUTCString)){var date;if(typeof options.expires=='number'){date=new Date();date.setTime(date.getTime()+(options.expires*24*60*60*1000));}else{date=options.expires;}expires='; expires='+date.toUTCString();}var path=options.path?'; path='+(options.path):'';var domain=options.domain?'; domain='+(options.domain):'';var secure=options.secure?'; secure':'';document.cookie=[name,'=',encodeURIComponent(value),expires,path,domain,secure].join('');}else{var cookieValue=null;if(document.cookie&&document.cookie!=''){var cookies=document.cookie.split(';');for(var i=0;i<cookies.length;i++){var cookie=jQuery.trim(cookies[i]);if(cookie.substring(0,name.length+1)==(name+'=')){cookieValue=decodeURIComponent(cookie.substring(name.length+1));break;}}}return cookieValue;}};
 
+	ui_ctl.onResize();
 	$(window).resize(ui_ctl.onResize);
 
 	$('#panel_toggle').click(function() {
@@ -412,25 +331,21 @@ if (jq_loaded && jq_notrun) {
 			ui_ctl.closePanel();
 		}
 	});
-
 }
 
 if (jq_loaded && mp_loaded && mp_notrun) {
 	mp_notrun = false;
 
-	settings_ctl._init();
+	mod_ctl.init_setting();
 
 	if (user) {
 		mod_ctl.init(['browse','geotag','phoset']);
 	} else {
 		mod_ctl.init(['browse']);
 	}
-	mod_ctl.init_show('showpanel');
 	ui_ctl.init();
 
 	mod_ctl.switchTo('browse');
-
-	ui_ctl.onResize();
 
 	if (user) {
 		$.cookie('autologin', 'true', {expires:365});
@@ -447,7 +362,7 @@ if (jq_loaded && mp_loaded && an_loaded && an_notrun) {
 	}
 }
 
-};
+}
 
 function loadjs(path, cb) {
 	var jo = document.createElement('script');

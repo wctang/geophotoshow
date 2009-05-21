@@ -261,7 +261,7 @@ var flickr = {
 };
 
 
-settings_ctl = {
+var settings_ctl = {
 	mode: 'browse',
 	refresh: 'auto',
 	browse_perpage: '25',
@@ -316,6 +316,7 @@ var showpanel_ctl = {
 	streetviewClient: new GStreetviewClient(),
 	$p:null, $bg:null, $ph:null, $phi:null, $vd:null, $vdf:null, $ifo:null, $sv:null, $svf:null, $loc:null,
 	init: function() {
+		var that = this;
 		this.$p = $(
 		'<div id="showpanel" style="position:absolute; top:0; bottom:0; left:0; right:0; z-index:1; display:none;">'+
 			'<div id="showpanel_bg" style="position:absolute; left:0; right:0; top:0; bottom:0; background:black url(/images/loading2.gif) no-repeat center;"></div>'+
@@ -343,6 +344,7 @@ var showpanel_ctl = {
 				'<img class="close" src="/images/transparent.png" style="position:absolute; right:5px; top:5px;"/>'+
 			'</div>'+
 		'</div>');
+		gmap.getContainer().appendChild(this.$p.get(0));
 		this.$bg = this.$p.find('#showpanel_bg');
 		this.$ph = this.$p.find('#showpanel_photo');
 		this.$phi = this.$p.find('#showpanel_photo_img');
@@ -354,7 +356,6 @@ var showpanel_ctl = {
 		this.$sv = this.$p.find('#showpanel_streetview');
 		this.$svf = this.$p.find('#showpanel_streetview_flash');
 
-		var that = this;
 		this.$bg.css('opacity', .8).click(function(e) {
 			if ($(e.target).attr('id') === 'showpanel_bg') {
 				that.hide();
@@ -387,8 +388,6 @@ var showpanel_ctl = {
 		this.$sv.find('.close').click(function() {
 			that.$sv.fadeOut('fast');
 		});
-
-		gmap.getContainer().appendChild(this.$p.get(0));
 	},
 	showPhoto: function(p) {
 		var that = this;
@@ -506,23 +505,13 @@ var common_ctl = {
 			mt[i].getMinimumResolution = function() { return 2; };
 		}
 	},
-	getRefreshRange: function() {
-		var $lt = $('#range_lt');
-		var $rb = $('#range_rb');
-		var nw = gmap.fromContainerPixelToLatLng(new GPoint(parseInt($lt.css('left'),10)+10, parseInt($lt.css('top'),10)+10));
-		var se = gmap.fromContainerPixelToLatLng(new GPoint(parseInt($rb.css('left'),10)-10, parseInt($rb.css('top'),10)-10));
+	getRefreshRange: function(left, top, right, bottom) {
+		var nw = gmap.fromContainerPixelToLatLng(new GPoint(left+10, top+10));
+		var se = gmap.fromContainerPixelToLatLng(new GPoint(right-10, bottom-10));
 		var w = nw.lng();
 		var e = se.lng();
 		var n = nw.lat();
 		var s = se.lat();
-
-//    var bound = gmap.getBounds();
-//    var sw = bound.getSouthWest();
-//    var ne = bound.getNorthEast();
-//    var w = sw.lng();
-//    var e = ne.lng();
-//    var n = ne.lat();
-//    var s = sw.lat();
 
 		if (w > 180) w-=360;
 		if (e <= -180) e+=360;
@@ -536,38 +525,6 @@ var common_ctl = {
 	caculatePhotoGroups: function(photos) {
 		var zoom = gmap.getZoom();
 		var delta = this.deltas[zoom];
-
-//	var pgrps=[]
-//	for (var i=0,len=photos.length; i<len; ++i) {
-//		var p = photos[i];
-//		if(!p.pos) continue;
-//
-//		var merged = false;
-//		for (var j=0,len2=pgrps.length; j<len2; ++j) {
-//			var b = pgrps[j];
-//			var bp = b.pos;
-//			var pp = p.pos;
-//			if (bp[0]+90+delta>pp[0]+90 && bp[0]+90-delta<pp[0]+90 && bp[1]+180+delta>pp[1]+180 && bp[1]+180-delta<pp[1]+180) {
-//				merged = true;
-//				b.photos.push(p);
-//				break;
-//			}
-//		}
-//
-//		if(!merged) {
-//			bb = {pos:p.pos}
-//			bb.photos=[p]
-//			pgrps.push(bb)
-//		}
-//	}
-//
-//	for (var i=0,len=pgrps.length; i<len; ++i) {
-//		var pg = pgrps[i];
-//		if(pg.photos.length === 0) { continue; }
-//
-//		var marker = marker_ctl.new_group_marker(pg);
-//		gmap.addOverlay(marker);
-//	}
 
 		var pgrps=[]
 		$.each(photos, function(i,p) {
@@ -790,12 +747,16 @@ var browse_ctl = {
 	user_id: null,
 	auto_refresh: true,
 	curr_photo_list: null,
+	refresh_control: null,
 	__markers: [],
 	__timestamp: null,
 	_center: null,
+	$p:null, $sw:null, $tgl:null, $focus:null, $range_lt:null, $range_rb:null, $myloc:null, $curmap:null, $curmap_p:null,
 
 	create: function() {
-		$('<a id="browse_switch" href="javascript:void(0)">Browse</a>').appendTo('#switch');
+		var that = this;
+		this.$sw = $('<a id="browse_switch" href="javascript:void(0)">Browse</a>');
+		this.$sw.appendTo('#switch');
 
 		var ss =
 		'<div id="browse_tab" class="tab">'+
@@ -804,12 +765,10 @@ var browse_ctl = {
 					'<option value="all" title="Search all photos.">All Photos</option>'+
 					'<option value="video" title="Search all videos.">Only Video</option>';
 		if (user) {
-			ss +=
-					'<option value="user" title="Only Search your photos.">Your Photos</option>'+
+			ss +=		'<option value="user" title="Only Search your photos.">Your Photos</option>'+
 					'<optgroup label="Your contacts" id="contact_optgroup"></optgroup>';
 		}
-			ss +=
-			          '</select>'+
+			ss +=	'</select>'+
 			'</div>'+
 			'<div class="tabrow" style="height:2em;">'+
 				'<form id="browse_query" style="margin:0; padding:0;">'+
@@ -843,87 +802,130 @@ var browse_ctl = {
 			'</div>'+
 			'<div id="browse_photolist" class="photolist" style="top:18.5em;"></div>'+
 		'</div>';
-		$(ss).appendTo('#tabs');
+		this.$p = $(ss);
+		this.$tgl = this.$p.find('#browse_taglist');
+		this.$p.appendTo('#tabs');
+
+
+		var RefreshControl = function() {
+			this.$div = $(
+			'<div style="text-align:center; font-size:11pt; display:none;">'+
+				'<img class="refresh" src="/images/transparent.png"/>'+
+				'<div id="sel_auto" class="selected">Auto</div>'+
+				'<div id="sel_manual" class="selable">Manual</div>'+
+			'</div>');
+		}
+		RefreshControl.prototype = new GControl();
+		RefreshControl.prototype.initialize = function(map) {
+			var that = this;
+			this.$div.click(function(e) {
+				var clickon = e.target.tagName+':'+e.target.className;
+
+				if (clickon === 'IMG:refresh') {
+					if (mod_ctl.getCurrentModCtl().onRefreshClick) {
+						mod_ctl.getCurrentModCtl().onRefreshClick();
+					}
+				} else if (clickon === 'DIV:selable') {
+					that.$div.find('.selected').attr('class', 'selable');
+					settings_ctl.refresh = $(e.target).attr('class', 'selected').attr('id').replace('sel_', '');
+					settings_ctl._save();
+				}
+			});
+
+			map.getContainer().appendChild(this.$div.get(0));
+			return this.$div.get(0);
+		};
+		RefreshControl.prototype.getDefaultPosition = function() {
+			return new GControlPosition(G_ANCHOR_TOP_RIGHT, new GSize(20, 50));
+		};
+		RefreshControl.prototype.printable = function() { return false; };
+		RefreshControl.prototype.selectable = function() { return false; };
+		RefreshControl.prototype.setMode = function(mod) {
+			if (mod === 'auto') {
+				this.$div.find('#sel_auto').attr('class', 'selected');
+				this.$div.find('#sel_manual').attr('class', 'selable');
+			} else {
+				this.$div.find('#sel_auto').attr('class', 'selable');
+				this.$div.find('#sel_manual').attr('class', 'selected');
+			}
+		};
+		RefreshControl.prototype.hide = function(mod) {
+			this.$div.hide();
+		};
+		RefreshControl.prototype.show = function(mod) {
+			this.$div.show();
+		};
+
+		this.refresh_control = new RefreshControl();
+		gmap.addControl(this.refresh_control);
 
 		if (navigator.geolocation || (google.loader && google.loader.ClientLocation)) {
-			$('<a id="links_findmylocation" href="javascript:void(0)" style="display:none;">Find my location</a>')
-				.appendTo('#links')
-				.click(function() { try {
-					function jumpto(lat, lng, acc) {
-						if (!acc) acc = 10;
-						gmap.setCenter(new GLatLng(lat, lng), acc);
-					}
-					if (navigator.geolocation) {
-						var that = this;
-						if (that.loc) {
+			this.$myloc = $('<a id="links_findmylocation" href="javascript:void(0)" style="display:none;">Find my location</a>');
+			this.$myloc.appendTo('#links');
+			this.$myloc.click(function() { try {
+				function jumpto(lat, lng, acc) {
+					if (!acc) acc = 10;
+					gmap.setCenter(new GLatLng(lat, lng), acc);
+				}
+				if (navigator.geolocation) {
+					var that = this;
+					if (that.loc) {
+						jumpto(that.loc[0], that.loc[1], that.loc[2]);
+					} else {
+						navigator.geolocation.getCurrentPosition(function (position) {
+							that.loc = [parseFloat(position.coords.latitude), parseFloat(position.coords.longitude), 8];
+							// TODO should check position.coords.accuracy
 							jumpto(that.loc[0], that.loc[1], that.loc[2]);
-						} else {
-							navigator.geolocation.getCurrentPosition(function (position) {
-								that.loc = [parseFloat(position.coords.latitude), parseFloat(position.coords.longitude), 8];
-								// TODO should check position.coords.accuracy
-								jumpto(that.loc[0], that.loc[1], that.loc[2]);
-							});
-						}
-					} else if (google.loader && google.loader.ClientLocation) {
-						jumpto(parseFloat(google.loader.ClientLocation.latitude), parseFloat(google.loader.ClientLocation.longitude), 8);
+						});
 					}
-				} finally { return false; }});
+				} else if (google.loader && google.loader.ClientLocation) {
+					jumpto(parseFloat(google.loader.ClientLocation.latitude), parseFloat(google.loader.ClientLocation.longitude), 8);
+				}
+			} finally { return false; }});
 		}
 
-		$('<a id="links_currentmap" target="_blank" style="display:none;"><img class="link" src="/images/transparent.png"/>Link to this map</a>')
-			.appendTo('#links')
-			.click(function() { try {
-				$('#links_currentmap_url').val(this.href);
-				$('#links_currentmap_panel').show();
-			} finally { return false; }});
-		$('<div id="links_currentmap_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">'+
+		this.$curmap_p = $('<div id="links_currentmap_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">'+
 			'<img class="close" src="/images/transparent.png" style="float:right;"/>'+
 			'<div>Copy and paste the URL below:<br/>'+
-			'<input id="links_currentmap_url" type="text" tabindex="400" style="width:29em;"/></div>'+
-		'</div>').appendTo('#mainbar');
-		$('#links_currentmap_panel .close').click(function(){ $(this.parentNode).hide(); });
-		$('#links_currentmap_panel input').click(function(){ this.select(); });
+			'<input type="text" tabindex="400" style="width:29em;"/></div>'+
+		'</div>');
+		this.$curmap_p.appendTo('#mainbar');
+		this.$curmap_p.find('.close').click(function(){ that.$curmap_p.hide(); });
+		this.$curmap_p.find('input').click(function(){ this.select(); });
 
-		// load setting
-		$('#browse_perpage').find('span').attr('class', 'perpage_num');
-		$('#browse_perpage_'+settings_ctl.browse_perpage).attr('class', 'perpage_curr');
-		$('#browse_viewas').find('span').attr('class', 'viewas_type');
-		$('#browse_viewas_'+settings_ctl.browse_viewas).attr('class', 'viewas_curr');
-		$('#browse_sortby').find('span').attr('class', 'sortby_type');
-		$('#browse_sortby_'+settings_ctl.browse_sortby).attr('class', 'sortby_curr');
-	},
+		this.$curmap = $('<a id="links_currentmap" target="_blank" style="display:none;"><img class="link" src="/images/transparent.png"/>Link to this map</a>');
+		this.$curmap.appendTo('#links');
+		this.$curmap.click(function() { try {
+			that.$curmap_p.find('input').val(this.href);
+			that.$curmap_p.show();
+		} finally { return false; }});
 
-	init: function() {
-		function refresh() {
-			try {
-				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
-			} finally {
-				return false;
-			}
-		}
 
+		function refresh() { try {
+			that.refreshPhotoGroup({page:1, no_delay:true});
+		} finally { return false; }}
 		$('#browse_type').change(refresh);
 		$('#browse_query').submit(refresh);
 
-		$('#browse_tab').click(function(e) {
+		this.$p.click(function(e) {
 			var clickon = e.target.tagName+':'+e.target.className;
 
 			switch (clickon) {
 			case 'SPAN:pager_prev': {
-				if (browse_ctl.page - 1 > 0) {
-					browse_ctl.refreshPhotoGroup({page:browse_ctl.page-1, no_delay:true});
+				if (that.page - 1 > 0) {
+					that.refreshPhotoGroup({page:that.page-1, no_delay:true});
 				}
 				break;
 			}
 			case 'SPAN:pager_num': {
 				var page = parseInt($(e.target).text(),10);
-				if (page === browse_ctl.page) break;
-				browse_ctl.refreshPhotoGroup({page:page, no_delay:true});
+				if (page === that.page) break;
+				that.refreshPhotoGroup({page:page, no_delay:true});
 				break;
 			}
 			case 'SPAN:pager_next': {
-				if (browse_ctl.page + 1 <= browse_ctl.pages) {
-					browse_ctl.refreshPhotoGroup({page:browse_ctl.page+1, no_delay:true});
+				if (that.page + 1 <= that.pages) {
+					that.refreshPhotoGroup({page:that.page+1, no_delay:true});
 				}
 				break;
 			}
@@ -931,38 +933,37 @@ var browse_ctl = {
 				$('#browse_perpage').find('span').attr('class', 'perpage_num');
 				settings_ctl.browse_perpage = $(e.target).attr('class', 'perpage_curr').attr('id').replace(/browse_perpage_/, '');
 				settings_ctl._save();
-				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
+				that.refreshPhotoGroup({page:1, no_delay:true});
 				break;
 			}
 			case 'SPAN:sortby_type': {
 				$('#browse_sortby').find('span').attr('class', 'sortby_type');
 				settings_ctl.browse_sortby = $(e.target).attr('class', 'sortby_curr').attr('type');
 				settings_ctl._save();
-				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
+				that.refreshPhotoGroup({page:1, no_delay:true});
 				break;
 			}
 			case 'SPAN:viewas_type': {
 				$('#browse_viewas').find('span').attr('class', 'viewas_type');
 				settings_ctl.browse_viewas = $(e.target).attr('class', 'viewas_curr').attr('type');
 				settings_ctl._save();
-				if (!browse_ctl.curr_photo_list) return;
-				browse_ctl.fillPhotoList();
+				if (!that.curr_photo_list) return;
+				that.fillPhotoList();
 				break;
 			}
 			case 'SPAN:tag': {
-				$('#browse_taglist').find('span').attr('class', 'tag');
-				e.target.className = 'tag_curr';
-				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
-				browse_ctl.refreshLinks();
+				that.$tgl.find('span').attr('class', 'tag');
+				$(e.target).attr('class', 'tag_curr');
+				that.refreshPhotoGroup({page:1, no_delay:true});
+				that.refreshLinks();
 				break;
 			}
 			case 'SPAN:taglist_clear': {
-				$('#browse_taglist').find('span').attr('class', 'tag');
-				browse_ctl.refreshPhotoGroup({page:1, no_delay:true});
-				browse_ctl.refreshLinks();
+				that.$tgl.find('span').attr('class', 'tag');
+				that.refreshPhotoGroup({page:1, no_delay:true});
+				that.refreshLinks();
 				break;
 			}
-
 			case 'IMG:f_icon':
 			case 'IMG:f_thumb':
 			case 'DIV:imgtitle': {
@@ -975,6 +976,26 @@ var browse_ctl = {
 			}
 		});
 
+		this.$focus = $('<div id="browse_focus" class="range"><div class="vline" style="top:0px; left:20px; height:41px;"></div><div class="hline" style="top:20px; left:0px; width:41px;"></div></div>');
+		this.$range_lt = $('<div id="browse_range_lt" class="range"><div class="vline" style="top:0px; left:0px; height:100px;"></div><div class="hline" style="top:0px; left:0px; width:100px;"></div></div>');
+		this.$range_rb = $('<div id="browse_range_rb" class="range"><div class="vline" style="bottom:0px; right:0px; height:100px;"></div><div class="hline" style="bottom:0px; right:0px; width:100px;"></div></div>');
+
+		gmap.getContainer().appendChild(this.$focus.get(0));
+		gmap.getContainer().appendChild(this.$range_lt.get(0));
+		gmap.getContainer().appendChild(this.$range_rb.get(0));
+		this.onResize();
+
+		// load setting
+		$('#browse_perpage').find('span').attr('class', 'perpage_num');
+		$('#browse_perpage_'+settings_ctl.browse_perpage).attr('class', 'perpage_curr');
+		$('#browse_viewas').find('span').attr('class', 'viewas_type');
+		$('#browse_viewas_'+settings_ctl.browse_viewas).attr('class', 'viewas_curr');
+		$('#browse_sortby').find('span').attr('class', 'sortby_type');
+		$('#browse_sortby_'+settings_ctl.browse_sortby).attr('class', 'sortby_curr');
+		this.refresh_control.setMode(settings_ctl.refresh);
+	},
+
+	init: function() {
 		if (!user) return;
 
 		flickr.contacts.getList({user_id:user.nsid}, function(rsp, params, api) {
@@ -990,12 +1011,13 @@ var browse_ctl = {
 		});
 	},
 	isNeedRefresh: function(pos) {
-		var bound=gmap.getBounds();
-		if (!pos)
-			pos=bound.getCenter();
-		var span=bound.toSpan();
+		if (!this._center) return true;
 
-		if (!browse_ctl._center) return true;
+		var bound=gmap.getBounds();
+		if (!pos) {
+			pos=bound.getCenter();
+		}
+		var span=bound.toSpan();
 
 		var dx = Math.abs(pos.lng() - this._center.lng());
 		var dy = Math.abs(pos.lat() - this._center.lat());
@@ -1048,7 +1070,7 @@ var browse_ctl = {
 			browse_ctl.curr_photo_list = photos;
 			browse_ctl.fillPhotoList();
 		} finally {
-			$('.popup_panel').hide();
+			browse_ctl.$curmap_p.hide();
 			browse_ctl.refreshLinks();
 			ui_ctl.endLoading();
 		}
@@ -1060,9 +1082,11 @@ var browse_ctl = {
 
 		mod_ctl.showmode.hide();
 
+		var that = this;
+
 		if (!actopt.no_delay) {
 			actopt.no_delay = true;
-			setTimeout( function() { browse_ctl.refreshPhotoGroup(actopt, timestamp); }, 2000);
+			setTimeout( function() { that.refreshPhotoGroup(actopt, timestamp); }, 2000);
 			return;
 		}
 
@@ -1079,7 +1103,7 @@ var browse_ctl = {
 
 		if (actopt.updatepos) {
 			$('#plac').empty();
-			$('#browse_taglist').empty();
+			that.$tgl.empty();
 
 			flickr.places.findByLatLon({lat:pos.lat(), lon:pos.lng(), accuracy:acc}, function(rsp, params, api) {
 				if (!rsp || !rsp.places || !rsp.places.place || rsp.places.place.length == 0) return;
@@ -1099,7 +1123,7 @@ var browse_ctl = {
 		}
 
 
-		var bbox = common_ctl.getRefreshRange();
+		var bbox = common_ctl.getRefreshRange(parseInt(this.$range_lt.css('left'),10), parseInt(this.$range_lt.css('top'),10), parseInt(this.$range_rb.css('left'),10), parseInt(this.$range_rb.css('top'),10));
 		var opts = {min_taken_date:'1800-01-01', bbox:bbox, accuracy:acc, page:browse_ctl.page, __timestamp:browse_ctl.__timestamp};
 
 		var query = $.trim($('#browse_query').children(':text').val());
@@ -1141,9 +1165,9 @@ var browse_ctl = {
 		var z = gmap.getZoom();
 		var $tag_curr = $('#browse_taglist').find('.tag_curr');
 		if ($tag_curr.size() > 0) {
-			$('#links_currentmap').attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&tag='+encodeURIComponent($tag_curr.text())+'&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page);
+			this.$curmap.attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&tag='+encodeURIComponent($tag_curr.text())+'&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page);
 		} else {
-			$('#links_currentmap').attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page);
+			this.$curmap.attr('href', '/flickr/#ll='+c+'&z='+z+'&mod=browse&sort='+settings_ctl.browse_sortby+'&perpage='+settings_ctl.browse_perpage+'&page='+browse_ctl.page);
 		}
 	},
 	onMapDragend: function() {
@@ -1163,23 +1187,45 @@ var browse_ctl = {
 
 		browse_ctl.refreshPhotoGroup({page:1, updatepos:true});
 	},
+	onResize: function() {
+		var s = gmap.getSize();
+		var mw = parseInt(s.width/4);
+		var mh = parseInt(s.height/4);
+
+		this.$focus.css({top:mh*2-20, left:mw*2-20});
+		this.$range_lt.css({top:mh, left:mw});
+		this.$range_rb.css({top:mh*3, left:mw*3});
+
+		this.$curmap_p.hide();
+	},
 	onActive: function() {
 		this._center = this.__timestamp = null;
-		ui_ctl._showFocus();
-		ui_ctl._showRange();
-		ui_ctl._showRefreshControl();
-		$('#links_findmylocation').show();
-		$('#links_currentmap').show();
-		browse_ctl.refreshLinks();
+		this.$p.show();
+		this.$sw.addClass('sel');
+		this.$focus.show();
+		this.$range_lt.show();
+		this.$range_rb.show();
+		this.refresh_control.show();
+		if (this.$myloc) {
+			this.$myloc.show();
+		}
+		this.$curmap.show();
+		this.refreshLinks();
 
 		this.refreshPhotoGroup({no_delay:true, updatepos:true});
 	},
 	onDeActive: function() {
-		ui_ctl._hideFocus();
-		ui_ctl._hideRange();
-		ui_ctl._hideRefreshControl();
-		$('#links_findmylocation').hide();
-		$('#links_currentmap').hide();
+		this.$p.hide();
+		this.$sw.removeClass('sel');
+		this.$focus.hide();
+		this.$range_lt.hide();
+		this.$range_rb.hide();
+		this.refresh_control.hide();
+		if (this.$myloc) {
+			this.$myloc.hide();
+		}
+		this.$curmap.hide();
+		this.$curmap_p.hide();
 		this.clearGroupMarker();
 		ui_ctl.endLoading();
 	}
@@ -1193,8 +1239,10 @@ var recent_ctl = {
 	},
 	init: function() {
 	},
+	onResize: function() {},
 	onActive: function() {
 		flickr.panda.getPhotos({panda_name:'wang wang'}, function(rsp) {
+			if (!rsp) return;
 			var photos = [];
 			flickr.parsePhotos(photos,rsp,true);
 
@@ -1241,11 +1289,14 @@ var geotag_ctl = {
 	curr_photo_list: null,
 	curr_gpx: [],
 	curr_marker: null,
+	$p:null, $sw:null, $focus:null,
 
 	create: function() {
-		$('<a id="geotag_switch" href="javascript:void(0)">GeoTagging</a>').appendTo('#switch');
+		var that = this;
+		this.$sw = $('<a id="geotag_switch" href="javascript:void(0)">GeoTagging</a>');
+		this.$sw.appendTo('#switch');
 
-		$(
+		this.$p = $(
 		'<div id="geotag_tab" class="tab">'+
 			'<div class="tabrow" style="height:2em;">'+
 				'<select id="geotag_filter">'+
@@ -1257,7 +1308,7 @@ var geotag_ctl = {
 					'<option value="noset">Your content not in a set</option>'+
 					'<option value="geotag">Your geotagged content</option>'+
 					'<option value="nogeotag">Your non-geotagged content</option>'+
-					'<option value="inrange">Your content in this range</option>'+
+//					'<option value="inrange">Your content in this range</option>'+
 					'<optgroup label="Your sets" id="photoset_optgroup"></optgroup>'+
 					'<optgroup label="Popular Tags" id="populartags_optgroup"></optgroup>'+
 					'<optgroup label="Your groups" id="publicgroups_optgroup"></optgroup>'+
@@ -1286,47 +1337,27 @@ var geotag_ctl = {
 				'</span>'+
 			'</div>'+
 			'<div id="geotag_photolist" class="photolist" style="top:8em;"></div>'+
-		'</div>').appendTo('#tabs');
+		'</div>');
+		this.$p.appendTo('#tabs');
 
-		// load setting
-		$('#geotag_perpage').find('span').attr('class', 'perpage_num');
-		$('#geotag_perpage_'+settings_ctl.geotag_perpage).attr('class', 'perpage_curr');
-		$('#geotag_viewas').find('span').attr('class', 'viewas_type');
-		$('#geotag_viewas_'+settings_ctl.geotag_viewas).attr('class', 'viewas_curr');
-	},
+		this.$focus = $('<div id="geotag_focus" class="range"><div class="vline" style="top:0px; left:20px; height:41px;"></div><div class="hline" style="top:20px; left:0px; width:41px;"></div></div>');
 
-	init: function() {
-		flickr.photosets.getList( {user_id:user.nsid}, function(rsp, params, api) {
-			if (!rsp || !rsp.photosets || !rsp.photosets.photoset) return;
+		gmap.getContainer().appendChild(this.$focus.get(0));
+		this.onResize();
 
-			var $sel = $('#photoset_optgroup').empty();
-			$.each(rsp.photosets.photoset, function(i,ps) { $sel.append('<option value="set-'+ps.id+'" title="'+ps.description._content+'">'+ps.title._content+' ('+ps.photos+')</option>'); });
-		});
-		flickr.people.getPublicGroups( {user_id:user.nsid}, function(rsp, params, api) {
-			if (!rsp || !rsp.groups || !rsp.groups.group) return;
 
-			var $sel = $('#publicgroups_optgroup').empty();
-			$.each(rsp.groups.group, function(i,gp) { $sel.append('<option value="grp-'+gp.nsid+'">'+gp.name+'</option>'); });
-		});
-		flickr.tags.getListUserPopular( {user_id:user.nsid}, function(rsp, params, api) {
-			if (!rsp || !rsp.who || !rsp.who.tags || !rsp.who.tags.tag) return;
-
-			var $sel = $('#populartags_optgroup').empty();
-			$.each(rsp.who.tags.tag, function(i,t) { $sel.append('<option value="tag-'+t._content+'">'+t._content+'</option>'); });
-		});
 
 		$('#geotag_filter').change(function() {
-			geotag_ctl.selected = [];
+			that.selected = [];
 			$('#geotag_operation').hide();
-			geotag_ctl.refreshPhotoList({page:1});
+			that.refreshPhotoList({page:1});
 		});
 
 		$('#geotag_set_location').click(function() {
 			if (!confirm("Save Location?")) return;
 
-			var $focus = $('#focus');
-			var ll = parseInt($focus.css('left'),10);
-			var tt = parseInt($focus.css('top'),10);
+			var ll = parseInt(that.$focus.css('left'),10);
+			var tt = parseInt(that.$focus.css('top'),10);
 
 			var latlng = gmap.fromContainerPixelToLatLng(new GPoint(ll+21, tt+21));
 			var zoom = gmap.getZoom();
@@ -1334,13 +1365,14 @@ var geotag_ctl = {
 			if (zoom > 16) zoom = 16;
 
 			//ui_ctl.beginLoading();
-			var total = geotag_ctl.selected.length;
+			var total = that.selected.length;
 			ui_ctl.showSaving('Saving 1 / ' + total);
 
-			var opts = { photo_id:geotag_ctl.selected[0], lat:latlng.lat(), lon:latlng.lng(), accuracy:zoom, _photo_ids:geotag_ctl.selected.concat(), _failed:[] };
+			var opts = { photo_id:that.selected[0], lat:latlng.lat(), lon:latlng.lng(), accuracy:zoom, _photo_ids:that.selected.concat(), _failed:[] };
 			flickr.photos.geo.setLocation( opts, function(rsp, params, api) {
-				if (!rsp)
-				params._failed.push(params.photo_id);
+				if (!rsp) {
+					params._failed.push(params.photo_id);
+				}
 
 				params._photo_ids.shift();
 
@@ -1353,9 +1385,9 @@ var geotag_ctl = {
 
 				ui_ctl.hideSaving();
 
-				geotag_ctl.selected = [];
+				that.selected = [];
 				$('#geotag_operation').hide();
-				geotag_ctl.refreshPhotoList({});
+				that.refreshPhotoList({});
 
 				if (params._failed.length > 0) {
 					ui_ctl.on_message('Saved. ' + params._failed + ' failed.');
@@ -1363,7 +1395,7 @@ var geotag_ctl = {
 					ui_ctl.on_message('Save Success.');
 				}
 
-				geotag_ctl.hideCurrMarker();
+				that.hideCurrMarker();
 			});
 		});
 
@@ -1371,13 +1403,14 @@ var geotag_ctl = {
 			if (!confirm("Remove Location?")) return;
 
 			//ui_ctl.beginLoading();
-			var total = geotag_ctl.selected.length;
+			var total = that.selected.length;
 			ui_ctl.showSaving('Removing 1 / ' + total);
 
-			var opts = {photo_id:geotag_ctl.selected[0], _photo_ids:geotag_ctl.selected.concat(), _failed:[]};
+			var opts = {photo_id:that.selected[0], _photo_ids:that.selected.concat(), _failed:[]};
 			flickr.photos.geo.removeLocation( opts, function(rsp, params, api) {
-				if (!rsp)
-				params._failed.push(params.photo_id);
+				if (!rsp) {
+					params._failed.push(params.photo_id);
+				}
 
 				params._photo_ids.shift();
 
@@ -1390,9 +1423,9 @@ var geotag_ctl = {
 
 				ui_ctl.hideSaving();
 
-				geotag_ctl.selected = [];
+				that.selected = [];
 				$('#geotag_operation').hide();
-				geotag_ctl.refreshPhotoList({});
+				that.refreshPhotoList({});
 
 				if (params._failed.length > 0) {
 					ui_ctl.on_message('Remove Location. ' + params._failed + ' failed.');
@@ -1400,7 +1433,7 @@ var geotag_ctl = {
 					ui_ctl.on_message('Remove Location Success.');
 				}
 
-				geotag_ctl.hideCurrMarker();
+				that.hideCurrMarker();
 			});
 		});
 
@@ -1409,21 +1442,21 @@ var geotag_ctl = {
 
 			switch (clickon) {
 			case 'SPAN:pager_prev': {
-				if (geotag_ctl.page - 1 > 0) {
-					geotag_ctl.refreshPhotoList({page:geotag_ctl.page-1});
+				if (that.page - 1 > 0) {
+					that.refreshPhotoList({page:that.page-1});
 				}
 				break;
 			}
 			case 'SPAN:pager_num': {
 				var page = parseInt($(e.target).text(),10);
-				if (page === geotag_ctl.page) break;
+				if (page === that.page) break;
 
-				geotag_ctl.refreshPhotoList({page:page});
+				that.refreshPhotoList({page:page});
 				break;
 			}
 			case 'SPAN:pager_next': {
-				if (geotag_ctl.page + 1 <= geotag_ctl.pages) {
-					geotag_ctl.refreshPhotoList({page:geotag_ctl.page-1});
+				if (that.page + 1 <= that.pages) {
+					that.refreshPhotoList({page:that.page-1});
 				}
 				break;
 			}
@@ -1431,29 +1464,29 @@ var geotag_ctl = {
 				$('#geotag_perpage').find('span').attr('class', 'perpage_num');
 				settings_ctl.geotag_perpage = $(e.target).attr('class', 'perpage_curr').attr('id').replace(/geotag_perpage_/, '');
 				settings_ctl._save();
-				geotag_ctl.refreshPhotoList({page:1});
+				that.refreshPhotoList({page:1});
 				break;
 			}
 			case 'SPAN:viewas_type': {
 				$('#geotag_viewas').find('span').attr('class', 'viewas_type');
 				settings_ctl.geotag_viewas = $(e.target).attr('class', 'viewas_curr').attr('type');
 				settings_ctl._save();
-				if (!geotag_ctl.curr_photo_list) return;
+				if (!that.curr_photo_list) return;
 
-				geotag_ctl.fillPhotoList();
+				that.fillPhotoList();
 				break;
 			}
 			case 'INPUT:geotag_sel': {
 				var photo = e.target.parentNode.photo;
 				if (e.target.checked) {
-					geotag_ctl.selected.push(photo.id);
+					that.selected.push(photo.id);
 				} else {
-					var idx = geotag_ctl.selected.indexOf(photo.id);
+					var idx = that.selected.indexOf(photo.id);
 					if ( idx >= 0)
-					geotag_ctl.selected.splice(idx, 1);
+					that.selected.splice(idx, 1);
 				}
 
-				if (geotag_ctl.selected.length > 0) {
+				if (that.selected.length > 0) {
 					$('#geotag_operation').show();
 				} else {
 					$('#geotag_operation').hide();
@@ -1465,16 +1498,25 @@ var geotag_ctl = {
 				if (!photo) return;
 				if (!photo.hasGeo()) return;
 
-				geotag_ctl.showCurrMarker(geotag_ctl.createMarker(photo));
+				that.showCurrMarker(that.createMarker(photo));
 				gmap.setCenter(new GLatLng(photo.lat,photo.lng), photo.acc);
 
 				break;
+			}
+			case 'IMG:f_icon':
+			case 'IMG:f_thumb':
+			case 'DIV:imgtitle': {
+				var p = e.target.parentNode.parentNode.parentNode.photo;
+				if (!p) return;
+
+				mod_ctl.showmode.showPhoto(p);
+				return false;
 			}
 			}
 		});
 
 		$('#geotag_upload_file_clear').click(function() {
-			geotag_ctl.hideGPX(true);
+			that.hideGPX(true);
 			return false;
 		});
 		$('#geotag_upload_file_preview').click(function() {
@@ -1486,10 +1528,10 @@ var geotag_ctl = {
 			try {
 				if (!mod_ctl) return;
 
-				if (rsp.stat !== 'ok') {
+				if (!rsp) {
 					ui_ctl.on_error(rsp.message);
 				} else {
-					geotag_ctl.showGPX(rsp.gpx);
+					that.showGPX(rsp.gpx);
 				}
 			} finally {
 				ui_ctl.endLoading();
@@ -1531,6 +1573,32 @@ var geotag_ctl = {
 //		}
 //	};
 
+		// load setting
+		$('#geotag_perpage').find('span').attr('class', 'perpage_num');
+		$('#geotag_perpage_'+settings_ctl.geotag_perpage).attr('class', 'perpage_curr');
+		$('#geotag_viewas').find('span').attr('class', 'viewas_type');
+		$('#geotag_viewas_'+settings_ctl.geotag_viewas).attr('class', 'viewas_curr');
+	},
+
+	init: function() {
+		flickr.photosets.getList( {user_id:user.nsid}, function(rsp, params, api) {
+			if (!rsp || !rsp.photosets || !rsp.photosets.photoset) return;
+
+			var $sel = $('#photoset_optgroup').empty();
+			$.each(rsp.photosets.photoset, function(i,ps) { $sel.append('<option value="set-'+ps.id+'" title="'+ps.description._content+'">'+ps.title._content+' ('+ps.photos+')</option>'); });
+		});
+		flickr.people.getPublicGroups( {user_id:user.nsid}, function(rsp, params, api) {
+			if (!rsp || !rsp.groups || !rsp.groups.group) return;
+
+			var $sel = $('#publicgroups_optgroup').empty();
+			$.each(rsp.groups.group, function(i,gp) { $sel.append('<option value="grp-'+gp.nsid+'">'+gp.name+'</option>'); });
+		});
+		flickr.tags.getListUserPopular( {user_id:user.nsid}, function(rsp, params, api) {
+			if (!rsp || !rsp.who || !rsp.who.tags || !rsp.who.tags.tag) return;
+
+			var $sel = $('#populartags_optgroup').empty();
+			$.each(rsp.who.tags.tag, function(i,t) { $sel.append('<option value="tag-'+t._content+'">'+t._content+'</option>'); });
+		});
 	},
 	hideCurrMarker: function(is_clear) {
 		if (geotag_ctl.curr_marker)
@@ -1582,22 +1650,22 @@ var geotag_ctl = {
 		var innerpanel = common_ctl.formatPhotoList(geotag_ctl.curr_photo_list, settings_ctl.geotag_viewas, false, true, true, geotag_ctl.selected);
 		$("#geotag_photolist").empty().append(innerpanel).get(0).scrollTop = 0;
 	},
-	onRefreshPhotoList: function(rsp, params, api) {
-		try {
-			if (!rsp) return;
+	onRefreshPhotoList: function(rsp, params, api) { try {
+		if (!rsp) return;
 
-			geotag_ctl.page = api.getPage(rsp);
-			geotag_ctl.pages = api.getPages(rsp);
-			common_ctl.makePager($('#geotag_pager'), geotag_ctl.page, geotag_ctl.pages);
+		geotag_ctl.page = api.getPage(rsp);
+		geotag_ctl.pages = api.getPages(rsp);
+		common_ctl.makePager($('#geotag_pager'), geotag_ctl.page, geotag_ctl.pages);
 
-			var photos = [];
-			api.parsePhotos(photos,rsp);
+		var photos = [];
+		api.parsePhotos(photos,rsp);
+		$.each(photos, function(k,v) {
+			v.oi = user.nsid;
+		});
 
-			geotag_ctl.curr_photo_list = photos;
-			geotag_ctl.fillPhotoList();
-		} finally {
-			ui_ctl.endLoading();
-		}
+		geotag_ctl.curr_photo_list = photos;
+		geotag_ctl.fillPhotoList();
+	} finally { ui_ctl.endLoading(); }
 	},
 	refreshPhotoList: function(actopt) {
 		if (actopt.page) {
@@ -1635,12 +1703,13 @@ var geotag_ctl = {
 		} else if (filter === 'nogeotag') {
 			ui_ctl.beginLoading();
 			flickr.photos.getWithoutGeoData(opts, geotag_ctl.onRefreshPhotoList);
-		} else if (filter === 'inrange') {
+/*		} else if (filter === 'inrange') {
 			opts.user_id = user.nsid;
 			opts.bbox = common_ctl.getRefreshRange();
 			opts.sort = 'date-posted-desc';
 			ui_ctl.beginLoading();
 			flickr.photos.search(opts, geotag_ctl.onRefreshPhotoList, true);
+*/
 		} else if (/^set\-(\d+)$/.exec(filter)) {
 			opts.photoset_id = RegExp.$1;
 			ui_ctl.beginLoading();
@@ -1666,15 +1735,26 @@ var geotag_ctl = {
 	onMapZoomend: function() {
 		ui_ctl.savePosition();
 	},
+	onResize: function() {
+		var s = gmap.getSize();
+		var mw = parseInt(s.width/4);
+		var mh = parseInt(s.height/4);
+
+		this.$focus.css({top:mh*2-20, left:mw*2-20});
+	},
 	onActive: function() {
-		geotag_ctl.showCurrMarker();
-		geotag_ctl.showGPX();
-		ui_ctl._showFocus();
+		this.$p.show();
+		this.$sw.addClass('sel');
+		this.showCurrMarker();
+		this.showGPX();
+		this.$focus.show();
 	},
 	onDeActive: function() {
-		geotag_ctl.hideCurrMarker();
-		geotag_ctl.hideGPX();
-		ui_ctl._hideFocus();
+		this.$p.hide();
+		this.$sw.removeClass('sel');
+		this.hideCurrMarker();
+		this.hideGPX();
+		this.$focus.hide();
 	}
 };
 
@@ -1682,14 +1762,18 @@ var geotag_ctl = {
 var phoset_ctl = {
 	// must login
 	photos: [],
+	curr_phoset: null,
 	curr_photo_list: null,
 	curr_gpx: [],
 	__markers: [],
+	$p:null, $sw:null, $curmap:null, $curmap_p:null,
 
 	create: function() {
-		$('<a id="phoset_switch" href="javascript:void(0)">Photoset</a>').appendTo('#switch');
+		var that = this;
+		this.$sw = $('<a id="phoset_switch" href="javascript:void(0)">Photoset</a>');
+		this.$sw.appendTo('#switch');
 
-		$(
+		this.$p = $(
 		'<div id="phoset_tab" class="tab">'+
 			'<div class="tabrow" style="height:2em;">'+
 				'<select id="phoset_photoset_list">'+
@@ -1710,49 +1794,22 @@ var phoset_ctl = {
 				'</span>'+
 			'</div>'+
 			'<div id="phoset_photolist" class="photolist" style="top:4em;"></div>'+
-		'</div>').appendTo('#tabs');
+		'</div>');
+		this.$p.appendTo('#tabs');
 
-		$('<a id="links_photoset" style="display:none;"><img class="link" src="/images/transparent.png"/>Link</a>').appendTo('#links');
-		$('<div id="links_photoset_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">'+
-			'<img class="close" src="/images/transparent.png" style="float:right;"/>'+
-			'<div>Paste link in <b>email</b> or <b>IM</b><br/>'+
-			'<input id="links_photoset_url" type="text" tabindex="400" style="width:29em;"/></div>'+
-			'<div>Paste HTML to embed in website<br/>'+
-			'<input id="links_photoset_html" type="text" tabindex="401" style="width:29em;"/></div>'+
-		'</div>').appendTo('#mainbar');
-		$('#links_photoset_panel .close').click(function(){ $(this.parentNode).hide(); });
-		$('#links_photoset_panel input').click(function(){ this.select(); });
+		this.$curmap = $('<a id="links_photoset" style="display:none;"><img class="link" src="/images/transparent.png"/>Link</a>');
+		this.$curmap.appendTo('#links');
 
-		// load setting
-		$('#phoset_viewas').find('span').attr('class', 'viewas_type');
-		$('#phoset_viewas_'+settings_ctl.phoset_viewas).attr('class', 'viewas_curr');
-	},
 
-	init: function() {
-		flickr.photosets.getList( {user_id:user.nsid}, function(rsp, params, api) {
-			if (!rsp || !rsp.photosets || !rsp.photosets.photoset) return;
-
-			var $sel = $('#phoset_photoset_list');
-			$.each(rsp.photosets.photoset, function(i, ps) { $sel.append('<option value="set-'+ps.id+'" title="'+ps.description._content+'">'+ps.title._content+' ('+ps.photos+')</option>'); });
-		});
-
-		$('#phoset_photoset_list').change(function() {
+		this.$p.find('#phoset_photoset_list').change(function() {
 			if (! /^set\-(\d+)$/.exec($(this).val())) return;
 
-			var photoset_id = RegExp.$1;
-			phoset_ctl.onActive();
-			phoset_ctl.loadPhotoSet(photoset_id);
+			that.curr_phoset = RegExp.$1;
+			that.$curmap.attr('href', '/show?fset='+that.curr_phoset).show();
+			phoset_ctl.loadPhotoSet(that.curr_phoset);
 		});
 
-		$('#links_photoset').click(function() {
-			try {
-				$('#links_photoset_url').val(this.href);
-				$('#links_photoset_html').val('<iframe width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="'+this.href+'"></iframe>');
-				$('#links_photoset_panel').show();
-			} finally { return false; }
-		});
-
-		$('#phoset_tab').click(function(e) {
+		this.$p.click(function(e) {
 			var clickon = e.target.tagName+':'+e.target.className;
 
 			switch (clickon) {
@@ -1776,6 +1833,38 @@ var phoset_ctl = {
 				return false;
 			}
 			}
+		});
+
+
+		this.$curmap.click(function() { try {
+			that.$curmap_p.find('#links_photoset_url').val(this.href);
+			that.$curmap_p.find('#links_photoset_html').val('<iframe width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="'+this.href+'"></iframe>');
+			that.$curmap_p.show();
+		} finally { return false; }});
+
+		this.$curmap_p = $('<div id="links_photoset_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">'+
+			'<img class="close" src="/images/transparent.png" style="float:right;"/>'+
+			'<div>Paste link in <b>email</b> or <b>IM</b><br/>'+
+			'<input id="links_photoset_url" type="text" tabindex="400" style="width:29em;"/></div>'+
+			'<div>Paste HTML to embed in website<br/>'+
+			'<input id="links_photoset_html" type="text" tabindex="401" style="width:29em;"/></div>'+
+		'</div>');
+		this.$curmap_p.appendTo('#mainbar');
+		this.$curmap_p.find('.close').click(function(){ that.$curmap_p.hide(); });
+		this.$curmap_p.find('input').click(function(){ this.select(); });
+
+
+		// load setting
+		$('#phoset_viewas').find('span').attr('class', 'viewas_type');
+		$('#phoset_viewas_'+settings_ctl.phoset_viewas).attr('class', 'viewas_curr');
+	},
+
+	init: function() {
+		flickr.photosets.getList( {user_id:user.nsid}, function(rsp, params, api) {
+			if (!rsp || !rsp.photosets || !rsp.photosets.photoset) return;
+
+			var $sel = $('#phoset_photoset_list');
+			$.each(rsp.photosets.photoset, function(i, ps) { $sel.append('<option value="set-'+ps.id+'" title="'+ps.description._content+'">'+ps.title._content+' ('+ps.photos+')</option>'); });
 		});
 	},
 	loadPhotoSet: function(photoset_id) {
@@ -1889,23 +1978,32 @@ var phoset_ctl = {
 	},
 
 
-	onMapDragend: function() {},
-	onMapZoomend: function() { phoset_ctl.regroupPhotos(); },
+	onMapDragend: function() {
+	},
+	onMapZoomend: function() {
+		phoset_ctl.regroupPhotos();
+	},
+	onResize: function() {
+	},
 	onActive: function() {
-		var val = $('#phoset_photoset_list').val();
-		phoset_ctl.showGPX();
-		phoset_ctl.loadGroupMarker();
+		this.$p.show();
+		this.$sw.addClass('sel');
+		this.showGPX();
+		this.loadGroupMarker();
+		this.$curmap_p.hide();
 
-		if (! /^set\-(\d+)$/.exec(val)) return;
-		var photoset_id = RegExp.$1;
-		$('.popup_panel').hide();
-		$('#links_photoset').attr('href', '/show?fset='+photoset_id).show();
+		if (this.curr_phoset) {
+			this.$curmap.show();
+		}
 	},
 	onDeActive: function() {
-		$('#links_photoset').hide();
+		this.$p.hide();
+		this.$sw.removeClass('sel');
+		this.hideGPX();
+		this.clearGroupMarker();
+		this.$curmap_p.hide();
+		this.$curmap.hide();
 		ui_ctl.endLoading();
-		phoset_ctl.hideGPX();
-		phoset_ctl.clearGroupMarker();
 	}
 };
 
@@ -1914,14 +2012,15 @@ var show_ctl = {
 	_photosets: [],
 	curr_photo_list: null,
 	_markers: [],
+	$p:null,
 
 	create: function() {
-		$(
+		this.$p = $(
 		'<div id="show_tab" class="tab">'+
 			'<div id="show_photolist" class="photolist" style="top:.5em;"></div>'+
-		'</div>').appendTo('#tabs');
-	},
-	init: function() {
+		'</div>');
+		this.$p.appendTo('#tabs');
+
 		$('#show_title_dropdn_toggle').click(function() {
 			$('#show_title_dropdn').slideToggle('fast');
 		});
@@ -1951,6 +2050,8 @@ var show_ctl = {
 			}
 			}
 		});
+	},
+	init: function() {
 	},
 
 	refreshTitle: function() {
@@ -2025,6 +2126,8 @@ var show_ctl = {
 
 		$.each(photo_ids, function(k,v) {
 			flickr.photos.getInfo({photo_id:v}, function(rsp) {
+				if (!rsp) return;
+
 				var p = new FlickrPhoto(rsp.photo);
 				p.t = rsp.photo.title._content;
 				p.lat = parseFloat(rsp.photo.location.latitude);
@@ -2040,6 +2143,8 @@ var show_ctl = {
 				}
 
 				flickr.people.getInfo({user_id:p.oi}, function(rsp) { try {
+					if (!rsp) return;
+
 					p.inf = rsp.person.iconfarm;
 					p.ins = rsp.person.iconserver;
 
@@ -2136,10 +2241,13 @@ var show_ctl = {
 
 	onMapDragend: function() {},
 	onMapZoomend: function() { show_ctl.regroupPhotos(); },
+	onResize: function() {},
 	onActive: function() {
+		this.$p.show();
 		show_ctl.loadGroupMarker();
 	},
 	onDeActive: function() {
+		this.$p.hide();
 		show_ctl.clearGroupMarker();
 	}
 };
@@ -2147,33 +2255,31 @@ var show_ctl = {
 
 mod_ctl = {
 	mods: {browse:browse_ctl, recent:recent_ctl, geotag:geotag_ctl, phoset:phoset_ctl, show:show_ctl},
-	shows: {showpanel:showpanel_ctl},
-	showmode: null,
+	curr_mods: [],
 	last_mod: null,
+	showmode: null,
 	getModCtl: function(mod) { return this.mods[mod]; },
 	getCurrentMod: function() { return this.last_mod; },
 	getCurrentModCtl: function() { return this.mods[this.last_mod]; },
+	init_setting: function() {
+		settings_ctl._init();
+	},
 	init: function(mods) {
 		common_ctl.init();
 		$.each(mods, function(k,v) {
 			mod_ctl.mods[v].create();
+			mod_ctl.curr_mods.push(mod_ctl.mods[v]);
 		});
+		showpanel_ctl.init();
+		mod_ctl.showmode = showpanel_ctl;
 	},
-	init_show: function(mod) {
-		if (mod === 'showpanel') {
-			showpanel_ctl.init();
-			mod_ctl.showmode = showpanel_ctl;
-		} else if (mod === 'embedpanel') {
-			embedpanel_ctl.init();
-			mod_ctl.showmode = embedpanel_ctl;
-		}
+	onResize: function() {
+		$.each(mod_ctl.curr_mods, function(k,v) {
+			v.onResize();
+		});
 	},
 	switchTo: function(mod) {
 		if (mod === this.last_mod) return;
-		$('.tab').hide();
-		$('#'+mod+'_tab').show();
-		$('#switch a').removeClass('sel');
-		$('#'+mod+'_switch').addClass('sel');
 		if (this.last_mod) {
 			this.getCurrentModCtl().onDeActive();
 		}
@@ -2182,12 +2288,10 @@ mod_ctl = {
 			this.getCurrentModCtl().__inited = true;
 			this.getCurrentModCtl().init();
 		}
-		$('.popup_panel').hide();
 		this.getCurrentModCtl().onActive();
 
 		mod_ctl.showmode.hide();
 		return this.getCurrentModCtl();
 	}
 };
-
 })();

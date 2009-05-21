@@ -6,7 +6,7 @@
 <title>GeoPhotoShow - Show Photoset</title>
 <style type="text/css">
 
-body { margin:0; overflow:hidden; color:black; font-family:Arial,sans-serif; }
+body { margin:0; padding:0; overflow:hidden; color:black; font-family:Arial,sans-serif; }
 img { border:0; }
 *:focus { outline:none }
 
@@ -49,11 +49,6 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 
 #userbar { text-align:right; margin-right:10px; font-size:84%; }
 
-#header { position:relative; width:100%; height:50px; }
- #logo { float:left; padding:6px 10px; }
- #logo a { text-decoration:none; }
- #title { font-size:28px; font-weight:bold; padding-left:10px; }
-
 #content { position:relative; width:100%; overflow:hidden; }
 #panel { position:absolute; width:150px; top:0; z-index:10; background-color:white; }
 
@@ -73,15 +68,15 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 .pager_num,
 .perpage_num,
 .viewas_type,
-.sortby_type { margin-right:3px; padding:2px 4px; color:#808185; border:1px solid #CCCCCC; cursor:pointer; }
+.sortby_type { margin-right:3px; padding:2px 4px; color:#808185; border:1px solid #CCCCCC; cursor:pointer; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
 .pager_num:hover,
 .perpage_num:hover,
 .viewas_type:hover,
-.sortby_type:hover { background-color:lightblue; }
+.sortby_type:hover { background-color:lightblue; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
 .pager_curr,
 .perpage_curr,
 .viewas_curr,
-.sortby_curr { margin-right:3px; padding:2px 4px; color:white;   border:1px solid #808185; background-color:#808185; font-weight:bold; }
+.sortby_curr { margin-right:3px; padding:2px 4px; color:white;   border:1px solid #808185; background-color:#808185; font-weight:bold; cursor:default; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
 
 
 .photolist { position:absolute; left:0; right:0; bottom:0; overflow-x:hidden; overflow-y:auto; }
@@ -108,12 +103,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 .photolist div.item_detail div.desc span.title { font-size:14pt; font-weight:bold; }
 .photolist div.item_detail div.desc img.buddy { float:left; width:25px; height:25px; margin:3px 8px; }
 
-#showpanel h1 { margin:0; font-size:12pt; float:left; }
-#showpanel a.title { color:#1057AE; }
-#showpanel a.title:hover { color:white; text-decoration:none; background-color:#0063DC; }
-#showpanel #showpanel_switch a { text-decoration:none; }
-#showpanel #showpanel_switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:auto; }
-#showpanel img.buddy { float:left; margin:3px 8px; }
+#showpanel a:hover { color:white; background-color:#0063DC; }
 </style>
 </head>
 
@@ -124,7 +114,6 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 <div id="error"></div>
 
 <div id="content">
-  <div id="settitle_control" style="text-align:center; font-size:11pt; padding:2px; background-color:white; border:1px solid black; display:none;"></div>
   <div id="mainbar" class="bar">
     <img id="show_title_dropdn_toggle" class="dropdn" src="/images/transparent.png" style="vertical-align:middle; margin-left:.5em;"/><span id="settitle"></span>
     <div id="show_title_dropdn" style="position:absolute; top:1.7em; z-index:1; margin-left:.5em; padding:.5em; border-left:1px solid gray;border-right:1px solid gray;border-bottom:1px solid gray; background-color:white; display:none;"></div>
@@ -142,7 +131,6 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 
 <script type="text/javascript">
 var gmap = null, user = null, API_KEY = '{{ API_KEY }}', mod_ctl = null, ui_ctl = null;
-var settings_ctl = null;
 var panelexp = false;
 
 var params = '{{ params }}';
@@ -176,7 +164,11 @@ ui_ctl = {
 
 		$('#panel_toggle').children('img').attr('class', (panelexp?'col':'exp'));
 
-		if(gmap) gmap.checkResize();
+		if (gmap) {
+			gmap.checkResize();
+		}
+	},
+	init: function() {
 	},
 
 	beginLoading: function() {
@@ -186,8 +178,10 @@ ui_ctl = {
 		$('#loading').hide();
 	},
 
-	showSaving: function(str) {},
-	hideSaving: function() {},
+	showSaving: function(str) {
+	},
+	hideSaving: function() {
+	},
 
 	expendPanel: function() {
 		panelexp = true;
@@ -196,14 +190,15 @@ ui_ctl = {
 	closePanel: function() {
 		panelexp = false;
 		ui_ctl.onResize(true);
-		$p = $('#panel');
+		var $p = $('#panel');
 		$p.animate({right:-$p.width()}, 'fast');
 	},
 
 	savePosition: function() {
 	},
 
-	on_message: function(str) {},
+	on_message: function(str) {
+	},
 	on_error: function(str) {
 		$('#error').text(str).show();
 	}
@@ -213,8 +208,8 @@ ui_ctl = {
 <script type="text/javascript" src="http://maps.google.com/maps?file=api&amp;v=2.x&amp;key=ABQIAAAA5iyLqLpUbk1qBe2volmsqxSGaeOUwwPiRwprcQIp1asxXaPRShRiXXnXJ0iaG0Cp007xopXguZyRPQ"></script>
 <script type="text/javascript">
 
-
 var jq_loaded = false, jq_notrun = true, mp_loaded = false, mp_notrun = true, an_loaded = false, an_notrun = true;
+
 function init() {
 
 if (jq_loaded && jq_notrun) {
@@ -241,7 +236,7 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 	gmap.disableDoubleClickZoom();
 
 	mod_ctl.init(['show']);
-	mod_ctl.init_show('showpanel');
+	ui_ctl.init();
 
 	if (fsetids) {
 		var flickr_photoset_ids = [];
@@ -270,8 +265,9 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 if (jq_loaded && mp_loaded && an_loaded && an_notrun) {
 	an_notrun = false;
 
-	if( typeof _gat !== 'undefined')
+	if( typeof _gat !== 'undefined') {
 		_gat._getTracker("UA-359113-8")._trackPageview();
+	}
 }
 
 }
@@ -305,4 +301,3 @@ image1.src = '/images/loading.gif';
 </script>
 </body>
 </html>
-
