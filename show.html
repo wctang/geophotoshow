@@ -246,9 +246,9 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 			fsetids = RegExp.$2;
 			flickr_photoset_ids.push(id);
 		}
-		var show_ctl = mod_ctl.switchTo('show');
+		var show_mod = mod_ctl.switchTo('show');
 		for (var i=0,n=flickr_photoset_ids.length; i<n; ++i) {
-			show_ctl.loadPhotoSet(flickr_photoset_ids[i]);
+			show_mod.loadPhotoSet(flickr_photoset_ids[i]);
 		}
 	} else if (photoid) {
 		var flickr_photo_ids = [];
@@ -257,8 +257,8 @@ if (jq_loaded && mp_loaded && mp_notrun) {
 			photoid = RegExp.$2;
 			flickr_photo_ids.push(id);
 		}
-		var show_ctl = mod_ctl.switchTo('show');
-		show_ctl.loadPhoto(flickr_photo_ids);
+		var show_mod = mod_ctl.switchTo('show');
+		show_mod.loadPhoto(flickr_photo_ids);
 	}
 }
 

@@ -336,13 +336,13 @@ if (jq_loaded && jq_notrun) {
 if (jq_loaded && mp_loaded && mp_notrun) {
 	mp_notrun = false;
 
-	mod_ctl.init_setting();
-
 	if (user) {
 		mod_ctl.init(['browse','geotag','phoset']);
 	} else {
 		mod_ctl.init(['browse']);
 	}
+	mod_ctl.load_setting();
+
 	ui_ctl.init();
 
 	mod_ctl.switchTo('browse');
