@@ -274,6 +274,11 @@ var showpanel_ctl = {
 	$p:null, $bg:null, $ph:null, $phi:null, $vd:null, $vdf:null, $ifo:null, $sv:null, $svf:null, $loc:null,
 	init: function() {
 		var that = this;
+
+		$('<style type="text/css"></style>').html(
+		'#showpanel a:hover { color:white; background-color:#0063DC; }'
+		).appendTo('head');
+
 		this.$p = $(
 		'<div id="showpanel" style="position:absolute; top:0; bottom:0; left:0; right:0; z-index:1; display:none;">'+
 			'<div id="showpanel_bg" style="position:absolute; left:0; right:0; top:0; bottom:0; background:black url(/images/loading2.gif) no-repeat center;"></div>'+
@@ -698,6 +703,16 @@ var browse_mod = {
 		this.$sw = $('<a id="browse_switch" href="javascript:void(0)">Browse</a>');
 		this.$sw.appendTo('#switch');
 
+		$('<style type="text/css"></style>').html(
+		'.taglist { position:absolute; left:0; right:0; overflow-x:hidden; overflow-y:auto; }'+
+		'.taglist div { width:420px; font-size:100%; line-height:1.5em; }'+
+		'.taglist span.tag,       .taglist_clear { cursor:pointer; padding:1px 3px; }'+
+		'.taglist span.tag:hover, .taglist_clear:hover { background-color:lightblue; }'+
+		'.taglist span.tag_curr { padding:1px 3px; color:white; background-color:#808185; }'+
+		'.taglist span.tag { cursor:pointer; padding:1px 3px; }'+
+		'.taglist span.tag:hover { background-color:lightblue; }'
+		).appendTo('head');
+
 		var ss =
 		'<div id="browse_tab" class="tab">'+
 			'<div class="tabrow" style="height:2em;">'+
@@ -822,7 +837,7 @@ var browse_mod = {
 			} finally { return false; }});
 		}
 
-		this.$curmap_p = $('<div id="links_currentmap_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">'+
+		this.$curmap_p = $('<div id="links_currentmap_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; display:none;">'+
 			'<img class="close" src="/images/transparent.png" style="float:right;"/>'+
 			'<div>Copy and paste the URL below:<br/>'+
 			'<input type="text" tabindex="400" style="width:29em;"/></div>'+
@@ -1774,7 +1789,7 @@ var phoset_mod = {
 			that.$curmap_p.show();
 		} finally { return false; }});
 
-		this.$curmap_p = $('<div id="links_photoset_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; padding:5px 5px 10px 10px; display:none;">'+
+		this.$curmap_p = $('<div id="links_photoset_panel" class="popup_panel" style="position:absolute; top:27px; right:10px; z-index:7; display:none;">'+
 			'<img class="close" src="/images/transparent.png" style="float:right;"/>'+
 			'<div>Paste link in <b>email</b> or <b>IM</b><br/>'+
 			'<input id="links_photoset_url" type="text" tabindex="400" style="width:29em;"/></div>'+

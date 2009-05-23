@@ -27,9 +27,9 @@ div.selable       { width:62px; height:20px; background:transparent url(/images/
 div.selable:hover {                          background:transparent url(/images/icons.png) no-repeat scroll -38px -207px; color:white; }
 div.selected      { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; cursor:default; line-height:20px; font-weight:bold; }
 
-.sdh   { position:absolute; left:0px; top:27px; height:5px; }
-.sdv   { position:absolute; left:0px; top:27px; width:5px; }
-.sdvr  { position:absolute; left:-6px; top:27px; width:5px; }
+.sdh   { position:absolute; left:0px; top:1.7em; height:5px; }
+.sdv   { position:absolute; left:0px; top:1.7em; width:5px; }
+.sdvr  { position:absolute; left:-6px; top:1.7em; width:5px; }
 .sdh  div { width:100%; }
 .sdv  div { height:100%; }
 .sdvr div { height:100%; right:-1px; }
@@ -48,7 +48,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 
 #userbar { float:right; margin-right:10px; font-size:84%; height:20px; }
 
-#header { height:40px; }
+#header { height:2.5em; }
  #logo { padding:6px 10px; }
  #logo a { text-decoration:none; }
  #title { font-size:24px; font-weight:bold; padding-left:10px; }
@@ -56,7 +56,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 #content { position:relative; width:100%; overflow:hidden; }
 #panel { position:absolute; width:450px; top:0; right:0; z-index:10; background-color:white; }
 
-.bar { position:relative; height:27px; line-height:27px; }
+.bar { position:relative; height:1.7em; line-height:1.7em; }
 .bar span { font-size:80%; margin-left:10px; }
 #switch a { padding:0 5px; border-right:1px solid gray; border-left:1px solid gray; }
 #switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:default; }
@@ -65,7 +65,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 
 #tabs { position:relative; font-size:80%; background-color:white; }
 .tab { position:absolute; top:6px; left:6px; bottom:6px; right:6px; overflow:hidden; display:none; }
-.tab .tabrow { line-height: 2em; }
+.tab .tabrow { line-height:2em; }
 
 .pager_dots { margin-right:3px;                  color:#808185; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
 .pager_prev,
@@ -84,14 +84,6 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 .perpage_curr,
 .viewas_curr,
 .sortby_curr { margin-right:3px; padding:2px 4px; color:white;   border:1px solid #808185; background-color:#808185; font-weight:bold; cursor:default; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
-
-.taglist { position:absolute; left:0; right:0; overflow-x:hidden; overflow-y:auto; }
-.taglist div { width:420px; font-size:100%; line-height:1.5em; }
-.taglist span.tag,       .taglist_clear { cursor:pointer; padding:1px 3px; }
-.taglist span.tag:hover, .taglist_clear:hover { background-color:lightblue; }
-.taglist span.tag_curr { padding:1px 3px; color:white; background-color:#808185; }
-.taglist span.tag { cursor:pointer; padding:1px 3px; }
-.taglist span.tag:hover { background-color:lightblue; }
 
 .photolist { position:absolute; left:0; right:0; bottom:0; overflow-x:hidden; overflow-y:auto; }
 .photolist div.panel { width:420px; }
@@ -117,9 +109,7 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 .photolist div.item_detail div.desc span.title { font-size:14pt; font-weight:bold; }
 .photolist div.item_detail div.desc img.buddy { float:left; width:25px; height:25px; margin:3px 8px; }
 
-#showpanel a:hover { color:white; background-color:#0063DC; }
-
-.popup_panel { font-size:small; background-color:#E8ECF9; border:1px solid #AABEF3; }
+.popup_panel { font-size:small; background-color:#E8ECF9; border:1px solid #AABEF3; padding:5px 5px 10px 10px; }
 </style>
 </head>
 
@@ -268,11 +258,18 @@ function getwins() {
 		return [document.documentElement.clientWidth, document.documentElement.clientHeight];
 	return [document.body.clientWidth, document.body.clientHeight];
 }
+function getpos(o) {
+	var ol = ot = 0;
+	do {
+		ol += o.offsetLeft; ot += o.offsetTop;
+	} while (o = o.offsetParent);
+	return [ol, ot];
+}
 
 var ss = getwins();
 var mm = document.getElementById('map');
 mm.style.width = (ss[0]-450)+'px'; // panel width
-mm.style.height = (ss[1]-40-27)+'px'; // header + mainbar height
+mm.style.height = (ss[1]-getpos(mm)[1])+'px'; // header + mainbar height
 
 gmap = new GMap2(mm);
 gmap.setUIToDefault();

@@ -26,7 +26,7 @@ img.dropdn:hover  {                          background:transparent url(/images/
 
 div.selable       { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; cursor:pointer; line-height:20px; color:lightblue; }
 div.selable:hover {                          background:transparent url(/images/icons.png) no-repeat scroll -38px -207px; color:white; }
-div.selected      { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; line-height:20px; font-weight:bold; }
+div.selected      { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; cursor:default; line-height:20px; font-weight:bold; }
 
 .sdh   { position:absolute; left:0px; top:1.7em; height:5px; }
 .sdv   { position:absolute; left:0px; top:1.7em; width:5px; }
@@ -47,37 +47,17 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 #saving  { position:absolute; left:47%; top:0px; padding:3px 10px; background-color:#FFF1A8; font-size:84%; font-weight:bold; display:none; }
 #error  { position:absolute; left:47%; top:0px; padding:3px 10px; background-color:red; font-size:84%; font-weight:bold; display:none; }
 
-#userbar { text-align:right; margin-right:10px; font-size:84%; }
-
 #content { position:relative; width:100%; overflow:hidden; }
-#panel { position:absolute; width:150px; top:0; z-index:10; background-color:white; }
+#panel { position:absolute; width:150px; top:0; right:0; z-index:10; background-color:white; }
 
 .bar { position:relative; height:1.7em; line-height:1.7em; }
 .bar span { font-size:80%; margin-left:10px; }
-.switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:auto; }
 #mainbar span { padding-right:2em; }
 #mainbar span a { margin-right:1em; }
 
 #tabs { position:relative; font-size:80%; background-color:white; }
 .tab { position:absolute; top:6px; left:6px; bottom:6px; right:6px; overflow:hidden; display:none; }
-.tab .tabrow { height: 2em; line-height: 2em; }
-
-.pager_prev,
-.pager_next { margin-right:3px; padding:3px 3px; color:#808185; cursor:pointer; }
-.pager_dots { margin-right:3px;                  color:#808185; }
-.pager_num,
-.perpage_num,
-.viewas_type,
-.sortby_type { margin-right:3px; padding:2px 4px; color:#808185; border:1px solid #CCCCCC; cursor:pointer; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
-.pager_num:hover,
-.perpage_num:hover,
-.viewas_type:hover,
-.sortby_type:hover { background-color:lightblue; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
-.pager_curr,
-.perpage_curr,
-.viewas_curr,
-.sortby_curr { margin-right:3px; padding:2px 4px; color:white;   border:1px solid #808185; background-color:#808185; font-weight:bold; cursor:default; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
-
+.tab .tabrow { line-height:2em; }
 
 .photolist { position:absolute; left:0; right:0; bottom:0; overflow-x:hidden; overflow-y:auto; }
 .photolist div.panel { width:110px; }
@@ -102,8 +82,6 @@ div.selected      { width:62px; height:20px; background:transparent url(/images/
 .photolist div.item_detail div.desc { position:relative; width:280px; font-size:11px; float:left; padding:5px; }
 .photolist div.item_detail div.desc span.title { font-size:14pt; font-weight:bold; }
 .photolist div.item_detail div.desc img.buddy { float:left; width:25px; height:25px; margin:3px 8px; }
-
-#showpanel a:hover { color:white; background-color:#0063DC; }
 </style>
 </head>
 
