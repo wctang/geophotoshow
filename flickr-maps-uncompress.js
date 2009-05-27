@@ -275,10 +275,6 @@ var showpanel_ctl = {
 	init: function() {
 		var that = this;
 
-		$('<style type="text/css"></style>').html(
-		'#showpanel a:hover { color:white; background-color:#0063DC; }'
-		).appendTo('head');
-
 		this.$p = $(
 		'<div id="showpanel" style="position:absolute; top:0; bottom:0; left:0; right:0; z-index:1; display:none;">'+
 			'<div id="showpanel_bg" style="position:absolute; left:0; right:0; top:0; bottom:0; background:black url(/images/loading2.gif) no-repeat center;"></div>'+
@@ -702,16 +698,6 @@ var browse_mod = {
 		var that = this;
 		this.$sw = $('<a id="browse_switch" href="javascript:void(0)">Browse</a>');
 		this.$sw.appendTo('#switch');
-
-		$('<style type="text/css"></style>').html(
-		'.taglist { position:absolute; left:0; right:0; overflow-x:hidden; overflow-y:auto; }'+
-		'.taglist div { width:420px; font-size:100%; line-height:1.5em; }'+
-		'.taglist span.tag,       .taglist_clear { cursor:pointer; padding:1px 3px; }'+
-		'.taglist span.tag:hover, .taglist_clear:hover { background-color:lightblue; }'+
-		'.taglist span.tag_curr { padding:1px 3px; color:white; background-color:#808185; }'+
-		'.taglist span.tag { cursor:pointer; padding:1px 3px; }'+
-		'.taglist span.tag:hover { background-color:lightblue; }'
-		).appendTo('head');
 
 		var ss =
 		'<div id="browse_tab" class="tab">'+
