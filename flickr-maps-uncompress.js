@@ -1378,6 +1378,7 @@ var geotag_mod = {
 
 		$('#geotag_tab').click(function(e) {
 			var clickon = e.target.tagName+':'+e.target.className;
+            var photo;
 
 			switch (clickon) {
 			case 'SPAN:pager_prev': {
@@ -1416,7 +1417,7 @@ var geotag_mod = {
 				break;
 			}
 			case 'INPUT:geotag_sel': {
-				var photo = e.target.parentNode.photo;
+				photo = e.target.parentNode.photo;
 				if (e.target.checked) {
 					that.selected.push(photo.id);
 				} else {
@@ -1434,7 +1435,7 @@ var geotag_mod = {
 				break;
 			}
 			case 'IMG:pos': {
-				var photo = e.target.parentNode.parentNode.photo;
+				photo = e.target.parentNode.parentNode.photo;
 				if (!photo || !photo.hasGeo()) break;
 
 				mod_ctl.showmode.hide();

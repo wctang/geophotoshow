@@ -1,0 +1,11 @@
+{
+  "name": "geophotoshow",
+  "version": "1.0",
+  "description": "GeoPhotoShow",
+  "content_scripts": [
+    {
+      "matches": ["http://www.flickr.com/*"],
+      "js": ["contentscript.js"]
+    }
+  ]
+}
