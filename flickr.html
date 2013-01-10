@@ -1,0 +1,403 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
+<title>GeoPhotoShow - geotagging photos</title>
+<style type="text/css">
+
+body { margin:0; padding:0; overflow:hidden; color:black; font-family:Arial,sans-serif; }
+img { border:0; }
+*:focus { outline:none }
+
+img.f_icon        { width:75px; height:75px; margin:2px; }
+img.f_icon:hover  { margin:0; border:2px solid yellow; }
+img.f_thumb       { margin:2px; }
+img.f_thumb:hover { margin:0; border:2px solid yellow; }
+img.exp           { width:23px; height:27px; background:transparent url(/images/icons.png) no-repeat scroll 0px 0px; }
+img.col           { width:23px; height:27px; background:transparent url(/images/icons.png) no-repeat scroll 0px -27px; }
+img.close         { width:15px; height:15px; background:transparent url(/images/icons.png) no-repeat scroll 0px -54px; cursor:pointer; }
+img.close:hover   {                          background:transparent url(/images/icons.png) no-repeat scroll -15px -54px; cursor:pointer; }
+img.pos           { width:15px; height:15px; background:transparent url(/images/icons.png) no-repeat scroll -23px 0px; }
+img.refresh       { width:62px; height:62px; background:transparent url(/images/icons.png) no-repeat scroll -38px -0px; cursor:pointer; }
+img.refresh:hover {                          background:transparent url(/images/icons.png) no-repeat scroll -38px -62px; cursor:pointer; }
+img.link          { width:15px; height:15px; background:transparent url(/images/icons.png) no-repeat scroll -15px -114px; cursor:pointer; }
+
+div.selable       { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; cursor:pointer; line-height:20px; color:lightblue; }
+div.selable:hover {                          background:transparent url(/images/icons.png) no-repeat scroll -38px -207px; color:white; }
+div.selected      { width:62px; height:20px; background:transparent url(/images/icons.png) no-repeat scroll -38px -187px; cursor:default; line-height:20px; font-weight:bold; }
+
+.sdh   { position:absolute; left:0px; top:1.7em; height:5px; }
+.sdv   { position:absolute; left:0px; top:1.7em; width:5px; }
+.sdvr  { position:absolute; left:-6px; top:1.7em; width:5px; }
+.sdh  div { width:100%; }
+.sdv  div { height:100%; }
+.sdvr div { height:100%; right:-1px; }
+.sd div { background-color:black; overflow:hidden; position:absolute; z-index:2; }
+.sd .o1 { opacity:0.1; filter:alpha(opacity=10); } .sd .o2 { opacity:0.08; filter:alpha(opacity=8); } .sd .o3 { opacity:0.06; filter:alpha(opacity=6); } .sd .o4 { opacity:0.04; filter:alpha(opacity=4); } .sd .o5 { opacity:0.02; filter:alpha(opacity=2); }
+.sd .h1 { height:1px; } .sd .h2 { height:2px; }  .sd .h3 { height:3px; }  .sd .h4 { height:4px; }  .sd .h5 { height:5px; }
+.sd .v1 { width:1px; }  .sd .v2 { width:2px; }   .sd .v3 { width:3px; }   .sd .v4 { width:4px; }   .sd .v5 { width:5px; }
+
+.range { position:absolute; }
+.vline { position:absolute; width:1px; background-color:red; }
+.hline { position:absolute; height:1px; background-color:red; }
+
+#loading { position:absolute; left:47%; top:0px; padding:3px 10px; background-color:#FFF1A8; font-size:84%; font-weight:bold; display:none; }
+#saving  { position:absolute; left:47%; top:0px; padding:3px 10px; background-color:#FFF1A8; font-size:84%; font-weight:bold; display:none; }
+#error  { position:absolute; left:47%; top:0px; padding:3px 10px; background-color:red; font-size:84%; font-weight:bold; display:none; }
+
+#userbar { float:right; margin-right:10px; font-size:84%; height:20px; }
+
+#header { height:2.5em; }
+ #logo { padding:6px 10px; }
+ #logo a { text-decoration:none; }
+ #title { font-size:24px; font-weight:bold; padding-left:10px; }
+
+#content { position:relative; width:100%; overflow:hidden; }
+#panel { position:absolute; width:450px; top:0; right:0; z-index:10; background-color:white; }
+
+.bar { position:relative; height:1.7em; line-height:1.7em; }
+.bar span { font-size:80%; margin-left:10px; }
+#switch a { padding:0 5px; border-right:1px solid gray; border-left:1px solid gray; }
+#switch a.sel { color:black; font-weight:bold; text-decoration:none; cursor:default; }
+#links { float:right; padding-right:2em; }
+#links a { padding:0 5px; }
+
+#tabs { position:relative; font-size:80%; background-color:white; }
+.tab { position:absolute; top:6px; left:6px; bottom:6px; right:6px; overflow:hidden; display:none; }
+.tab .tabrow { line-height:2em; }
+
+.pager_dots { margin-right:3px;                  color:#808185; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
+.pager_prev,
+.pager_next { margin-right:3px; padding:3px 3px; color:#808185; cursor:pointer; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
+.pager_prev:hover,
+.pager_next:hover { background-color:lightblue; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
+.pager_num,
+.perpage_num,
+.viewas_type,
+.sortby_type { margin-right:3px; padding:2px 4px; color:#808185; border:1px solid #CCCCCC; cursor:pointer; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
+.pager_num:hover,
+.perpage_num:hover,
+.viewas_type:hover,
+.sortby_type:hover { background-color:lightblue; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
+.pager_curr,
+.perpage_curr,
+.viewas_curr,
+.sortby_curr { margin-right:3px; padding:2px 4px; color:white;   border:1px solid #808185; background-color:#808185; font-weight:bold; cursor:default; user-select:none;-khtml-user-select:none;-moz-user-select:none;}
+
+.photolist { position:absolute; left:0; right:0; bottom:0; overflow-x:hidden; overflow-y:auto; }
+.photolist div.panel { width:420px; }
+
+.photolist div.item_icon { position:relative; width:79px; height:79px; float:left; }
+.photolist div.item_icon input { position:absolute; left:0px; top:57px; z-index:1; }
+.photolist div.item_icon div.havpos { position:absolute; left:59px; top:59px; z-index:1; }
+
+.photolist div.item_thumb { position:relative; width:104px; height:104px; float:left; }
+.photolist div.item_thumb:hover { background-color:lightyellow; }
+.photolist div.item_thumb input { position:absolute; left:0px; top:0px; z-index:1; }
+.photolist div.item_thumb div.havpos { position:absolute; left:3px; top:1.5em; z-index:1; }
+
+.photolist div.item_detail { position:relative; }
+.photolist div.item_detail:hover { background-color:lightyellow; }
+.photolist div.item_detail input { float:left; }
+.photolist div.item_detail div.havpos { position:absolute; top:2em; left:3px; }
+
+.photolist div.item_detail a { text-decoration:none; }
+.photolist div.item_detail a:hover { text-decoration:underline; }
+.photolist div.item_detail div.thumb { position:relative; width:104px; float:left; text-align:center; }
+.photolist div.item_detail div.desc { position:relative; width:280px; font-size:11px; float:left; padding:5px; }
+.photolist div.item_detail div.desc span.title { font-size:14pt; font-weight:bold; }
+.photolist div.item_detail div.desc img.buddy { float:left; width:25px; height:25px; margin:3px 8px; }
+
+#showpanel a:hover { color:white; background-color:#0063DC; }
+
+.taglist { position:absolute; left:0; right:0; overflow-x:hidden; overflow-y:auto; }
+.taglist div { width:420px; font-size:100%; line-height:1.5em; }
+.taglist span.tag,       .taglist_clear { cursor:pointer; padding:1px 3px; }
+.taglist span.tag:hover, .taglist_clear:hover { background-color:lightblue; }
+.taglist span.tag_curr { padding:1px 3px; color:white; background-color:#808185; }
+.taglist span.tag { cursor:pointer; padding:1px 3px; }
+.taglist span.tag:hover { background-color:lightblue; }
+
+.popup_panel { font-size:small; background-color:#E8ECF9; border:1px solid #AABEF3; padding:5px 5px 10px 10px; }
+</style>
+</head>
+
+<body onunload="GUnload()">
+
+<div id="loading"> Loading... </div>
+<div id="saving"></div>
+<div id="error"></div>
+
+<div id="userbar">
+{% if user %}
+  <b>{{ user.username }}@<a href="http://www.flickr.com/"><img src="/images/icon_flickr.gif"/></a> </b>
+ | <a href="/flickr/logout">Sign out</a>
+{% else %}
+  <a href="/flickr/login">Sign in <img src="/images/icon_flickr.gif"/></a>
+{% endif %}
+<!--
+  | <a href="http://groups.google.com/group/geophotoshow">Bug report</a>
+-->
+  | <a target="_blank" href="http://docs.google.com/View?docID=dxtw5pn_11328mg6dg9">Help</a> | <a target="_blank" href="http://wiki.github.com/wctang/geophotoshow">About</a>
+</div>
+
+<div id="header">
+  <div id="logo"><a href="//www.geophotoshow.com/"><span id="title"><span style="color:#0161dc;">GeoPhoto</span><span style="color:#ff007c;">Show</span></span></a></div>
+<!--
+  <div style="float:right; margin:10px 10px 0 0;">
+    <a target="_blank" href="https://www.paypal.com/xclick/business=wctang@gmail.com&item_name=geophotoshow&no_note=1&currency_code=USD"><img class="notsowide" src="/images/paypal_en.gif"/></a>
+  </div>
+-->
+</div>
+
+<div id="content">
+  <div id="mainbar" class="bar" style="background-color:#D5DDF3;">
+    <span id="links"></span>
+  </div>
+  <div id="map"></div>
+  <div class="sd sdh"><div class="h1 o1"></div><div class="h2 o2"></div><div class="h3 o3"></div><div class="h4 o4"></div><div class="h5 o5"></div></div>
+  <div class="sd sdv"><div class="v1 o1"></div><div class="v2 o2"></div><div class="v3 o3"></div><div class="v4 o4"></div><div class="v5 o5"></div></div>
+  <div id="panel">
+    <a id="panel_toggle" href="javascript:void(0)" style="position:absolute;"><img class="col" style="position:absolute; right:-1px;" src="/images/transparent.png"/></a>
+    <div class="sd sdvr"><div class="v1 o1"></div><div class="v2 o2"></div><div class="v3 o3"></div><div class="v4 o4"></div><div class="v5 o5"></div></div>
+    <div class="bar" style="background-color:#E8ECF9;">
+      <span id="switch"></span>
+    </div>
+    <div id="tabs">
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+var gmap = null, user = null, API_KEY = '{{ API_KEY }}', mod_ctl = null, ui_ctl = null;
+var panelexp = true;
+
+{% if user %}
+user = { nsid:'{{ user.nsid }}' };
+{% endif %}
+
+ui_ctl = {
+	onResize: function(nopanel) {
+		var h = $(window).height();
+		var w = $(window).width();
+		var $m = $('#map');
+		var $p = $('#panel');
+
+		var mw = panelexp ? w-$p.width() : w;
+		var mh = h-$m.offset().top;
+		var ph = h-$p.offset().top;
+
+		$m.css({height:mh, width:mw});
+		$('#mainbar').width(mw);
+		$('#tabs').height(mh);
+		$('.sdh').width(mw);
+		$('.sdv').height(mh);
+		$('.sdvr').height(mh);
+		if(nopanel) {
+			$p.css({height:ph});
+		} else {
+			var pr = panelexp ? 0 : -$p.width();
+			$p.css({height:ph, right:pr});
+		}
+
+		$('#panel_toggle').children('img').attr('class', (panelexp?'col':'exp'));
+
+		if (gmap) {
+			gmap.checkResize();
+		}
+		if (mod_ctl) {
+			mod_ctl.onResize();
+		}
+	},
+	init: function() {
+		$("#switch a").click(function(){
+			mod_ctl.switchTo($(this).attr('id').replace(/_switch/,''));
+		});
+	},
+
+	beginLoading: function() {
+		$('#loading').show();
+	},
+	endLoading: function() {
+		$('#loading').hide();
+	},
+
+	showSaving: function(str) {
+		$('#saving').text(str).show();
+	},
+	hideSaving: function() {
+		$('#saving').hide();
+	},
+
+	expendPanel: function() {
+		panelexp = true;
+		$('#panel').animate({right:0}, 'fast', ui_ctl.onResize);
+	},
+	closePanel: function() {
+		panelexp = false;
+		ui_ctl.onResize(true);
+		var $p = $('#panel');
+		$p.animate({right:-$p.width()}, 'fast');
+	},
+
+	savePosition: function() {
+		$.cookie('currpos', gmap.getCenter().toUrlValue()+','+gmap.getZoom(), {path:'/', expires:365});
+	},
+
+	on_message: function(str) {
+		$('#saving').text(str).show();
+		setTimeout(function() { $('#saving').fadeOut('slow'); }, 2000);
+	},
+	on_error: function(str) {
+		$('#error').text(str).show();
+		setTimeout(function() { $('#error').fadeOut('slow'); }, 2000);
+	}
+};
+</script>
+
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAA5iyLqLpUbk1qBe2volmsqxSGaeOUwwPiRwprcQIp1asxXaPRShRiXXnXJ0iaG0Cp007xopXguZyRPQ"></script>
+<script type="text/javascript">
+google.load("maps", "2.x");
+google.setOnLoadCallback(function() {
+
+function getwins() {
+	if(document.innerWidth)
+		return [document.innerWidth, document.innerHeight];
+	if(!(document.documentElement.clientHeight == 0))
+		return [document.documentElement.clientWidth, document.documentElement.clientHeight];
+	return [document.body.clientWidth, document.body.clientHeight];
+}
+function getpos(o) {
+	var ol = ot = 0;
+	do {
+		ol += o.offsetLeft; ot += o.offsetTop;
+	} while (o = o.offsetParent);
+	return [ol, ot];
+}
+
+var ss = getwins();
+var mm = document.getElementById('map');
+mm.style.width = (ss[0]-450)+'px'; // panel width
+mm.style.height = (ss[1]-getpos(mm)[1])+'px'; // header + mainbar height
+
+gmap = new GMap2(mm);
+gmap.setUIToDefault();
+gmap.disableDoubleClickZoom();
+gmap.addControl(new GOverviewMapControl());
+
+function cookieget(name) {
+	var ret = null;
+	if (!document.cookie || document.cookie == '')
+		return ret;
+	var cookies = document.cookie.split(';');
+	for (var i = 0; i < cookies.length; i++) {
+		var cookie = cookies[i].replace(/(^\s*)|(\s*$)/g, '');
+		if (cookie.substring(0, name.length + 1) == (name + '=')) {
+			ret = decodeURIComponent(cookie.substring(name.length + 1));
+			break;
+		}
+	}
+	return ret;
+}
+
+var geostr = cookieget('currpos');
+if (/^#ll=([\-\d\,\.]+)&z=(\d+)(.*)$/.exec(location.hash)) {
+	var params = RegExp.$3;
+	gmap.setCenter(GLatLng.fromUrlValue(RegExp.$1), parseInt(RegExp.$2,10));
+} else if (geostr) {
+	var pos = geostr.split(',');
+	gmap.setCenter(new GLatLng(parseFloat(pos[0]),parseFloat(pos[1])), parseInt(pos[2],10));
+} else if (google.loader.ClientLocation) {
+	gmap.setCenter(new GLatLng(parseFloat(google.loader.ClientLocation.latitude), parseFloat(google.loader.ClientLocation.longitude)), 8);
+} else {
+	var bounds = new GLatLngBounds(new GLatLng(-40,-100), new GLatLng(40,100)); //new GLatLng(20,0)
+	var zoom = gmap.getBoundsZoomLevel(bounds);
+	gmap.setCenter(bounds.getCenter(), zoom);
+}
+
+
+var jq_loaded = false, jq_notrun = true, mp_loaded = false, mp_notrun = true, an_loaded = false, an_notrun = true;
+
+function init() {
+
+if (jq_loaded && jq_notrun) {
+	jq_notrun = false;
+
+	// http://dev.jquery.com/browser/trunk/plugins/cookie/jquery.cookie.min.js r6165
+	jQuery.cookie=function(name,value,options){if(typeof value!='undefined'){options=options||{};if(value===null){value='';options=$.extend({},options);options.expires=-1;}var expires='';if(options.expires&&(typeof options.expires=='number'||options.expires.toUTCString)){var date;if(typeof options.expires=='number'){date=new Date();date.setTime(date.getTime()+(options.expires*24*60*60*1000));}else{date=options.expires;}expires='; expires='+date.toUTCString();}var path=options.path?'; path='+(options.path):'';var domain=options.domain?'; domain='+(options.domain):'';var secure=options.secure?'; secure':'';document.cookie=[name,'=',encodeURIComponent(value),expires,path,domain,secure].join('');}else{var cookieValue=null;if(document.cookie&&document.cookie!=''){var cookies=document.cookie.split(';');for(var i=0;i<cookies.length;i++){var cookie=jQuery.trim(cookies[i]);if(cookie.substring(0,name.length+1)==(name+'=')){cookieValue=decodeURIComponent(cookie.substring(name.length+1));break;}}}return cookieValue;}};
+
+	ui_ctl.onResize();
+	$(window).resize(ui_ctl.onResize);
+
+	$('#panel_toggle').click(function() {
+		panelexp = !panelexp;
+		if(panelexp) {
+			ui_ctl.expendPanel();
+		} else {
+			ui_ctl.closePanel();
+		}
+	});
+}
+
+if (jq_loaded && mp_loaded && mp_notrun) {
+	mp_notrun = false;
+
+	if (user) {
+		mod_ctl.init(['browse','geotag','phoset']);
+	} else {
+		mod_ctl.init(['browse']);
+	}
+	mod_ctl.load_setting();
+
+	ui_ctl.init();
+
+	mod_ctl.switchTo('browse');
+
+	if (user) {
+		$.cookie('autologin', 'true', {expires:365});
+	} else {
+		$.cookie('autologin', 'false', {expires:365});
+	}
+}
+
+if (jq_loaded && mp_loaded && an_loaded && an_notrun) {
+	an_notrun = false;
+
+	if( typeof _gat !== 'undefined') {
+		_gat._getTracker("UA-359113-8")._trackPageview();
+	}
+}
+
+}
+
+function loadjs(path, cb) {
+	var jo = document.createElement('script');
+	jo.done = false;
+	jo.onload = function() { jo.done = true; cb(); };
+	jo.onreadystatechange = function() { if (('complete' === jo.readyState || 'loaded' === jo.readyState) && !jo.done) { jo.done = true; cb(); } };
+	jo.src = path;
+	document.getElementsByTagName('head')[0].appendChild(jo);
+}
+
+loadjs('http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js', function() {
+	jq_loaded = true;
+	init();
+});
+loadjs("/scripts/flickr-maps.js", function() {
+	mp_loaded = true;
+	init();
+});
+loadjs('http://www.google-analytics.com/ga.js', function() {
+	an_loaded = true;
+	init();
+});
+
+// preload
+var image1 = new Image();
+image1.src = '/images/loading.gif';
+
+});
+</script>
+</body>
+</html>
