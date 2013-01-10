@@ -1,0 +1,6 @@
+
+1. Change GAE application name in gae/app.yaml
+2. Change google api key in gae/flickr.html.
+3. Change flickr api key/secrete in gae/main.py
+4. Deploy GAE to google app engine.
+
