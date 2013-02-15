@@ -243,11 +243,20 @@ class ShowHandler(webapp.RequestHandler):
     self.response.headers.add_header("Pragma", "no-cache")
     self.response.out.write(template.render(path, val))
 
+class GeoPsHandler(webapp.RequestHandler):
+  def get(self):
+    val = {'API_KEY':Flickr.API_KEY}
+    path = os.path.join(os.path.dirname(__file__), 'geops.html')
+    self.response.headers.add_header("Expires", "Tue, 01 Jan 1980 1:00:00 GMT")
+    self.response.headers.add_header("Pragma", "no-cache")
+    self.response.out.write(template.render(path, val))
+
 application = webapp.WSGIApplication([
       ('/', MainPage),
       (r'/flickr/(.*)', FlickrHandler),
       (r'/show', ShowHandler),
       (r'/gpxupload/(.*)', GpxUploadHandler),
+      (r'/geops', GeoPsHandler),
     ],
     debug=True)
 
